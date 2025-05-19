@@ -1,0 +1,64 @@
+# RAG Embedding Service API
+
+## API Endpoints
+
+### 1. /health
+- **Method**: GET
+- **Description**: Health check endpoint
+- **Response**: {"status": "healthy"}
+
+### 2. /search
+- **Method**: POST
+- **Description**: Search across all sources with the given query
+- **Parameters**:
+  - query: string (required) - The search query
+  - similarity_threshold: float (default: 0.5) - Threshold for similarity scores
+  - limit: int (default: 10) - Maximum number of search results
+  - weights: object (optional) - Custom weighting parameters
+
+### 3. /rerank
+- **Method**: POST
+- **Description**: Rerank documents using the reranker model
+- **Parameters**:
+  - query: string (required) - The search query
+  - documents: array (required) - List of documents to rerank
+  - top_k: int (default: 10) - Number of top results to return
+  - weights: object (optional) - Custom weighting parameters
+
+### 4. /search_and_rerank
+- **Method**: POST
+- **Description**: Combined endpoint to search and rerank in one call
+- **Parameters**:
+  - query: string (required) - The search query
+  - similarity_threshold: float (default: 0.5) - Threshold for similarity scores
+  - limit: int (default: 10) - Maximum number of search results
+  - rerank_top_k: int (default: 10) - Number of top results after reranking
+  - weights: object (default: DEFAULT_WEIGHTS) - Custom weighting parameters
+
+### 5. /config/weights
+- **Method**: GET
+- **Description**: Get the current default weight configuration
+- **Response**: Current weight configuration object
+
+### 6. /config/weights
+- **Method**: POST
+- **Description**: Update the default weight configuration
+- **Parameters**:
+  - document_collection_weight: float
+  - email_collection_weight: float
+  - recency_weight: float
+  - recency_decay_days: int
+  - chromadb_weight: float
+  - whoosh_weight: float
+  - reranker_weight: float
+
+## Weight Configuration Parameters
+
+- document_collection_weight: Weight for document collection (default: 1.5)
+- email_collection_weight: Weight for email collection (default: 1.0)
+- recency_weight: How much to boost recent documents (default: 0.5)
+- recency_decay_days: Documents older than this get reduced weight (default: 365)
+- chromadb_weight: Weight for ChromaDB results (default: 1.1)
+- whoosh_weight: Weight for Whoosh results (default: 1.0)
+- reranker_weight: How much the reranker score influences final ranking (default: 0.8)
+

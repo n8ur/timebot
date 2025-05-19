@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Search the time-nuts Mailing List Archive</h2>
+<P>
+This tool provides an AI-assisted full text and content-similarity
+search of the
+<A HREF="http://leapsecond.com/time-nuts.htm">time-nuts</A>
+mailing list archives at
+<A HREF="https://febo.com/pipermail/time-nuts_lists.febo.com">
+https://febo.com/pipermail/time-nuts_lists.febo.com</A>
+<P>
+Enter your query using plain language or boolean terms (capitalize
+boolean operators like OR and AND).
+<P>
+Play with the "Similarity Threshold" setting to increase or decrease
+the number of responses from the similarity database.  Lower values
+require greater similarity.  Something between 1.0 and 2.0 usually works
+best.
+<P>
+<form action="/search" method="post" class="form">
+    <div class="mb-3">
+        <label class="form-label">Query:</label>
+        <input type="text" name="query" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Search Mode:</label>
+        <select name="mode" class="form-select">
+            <option value="whoosh">Whoosh (Full-Text)</option>
+            <option value="chroma">ChromaDB (Similarity)</option>
+            <option value="combined" selected>Combined</option>
+        </select>
+    </div>
+    <div class="mb-3 form-check">
+        <input type="checkbox" name="fuzzy" class="form-check-input" {% if default_fuzzy %}checked{% endif %}>
+        <label class="form-check-label">Fuzzy Search</label>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Similarity Threshold (ChromaDB):</label>
+        <input type="number" name="similarity_threshold" class="form-control" 
+               value="{{ default_similarity_threshold }}" step="0.1">
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+{% endblock %}
+

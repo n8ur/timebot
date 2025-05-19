@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Document</title>
+    <style>
+        {{ css_content|safe }}
+        
+        /* Additional styles for review page */
+        .review-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .ocr-text-panel {
+            flex: 1;
+            background-color: var(--container-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 70vh;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: monospace;
+            line-height: 1.5;
+        }
+        
+        .metadata-panel {
+            flex: 1;
+            background-color: var(--container-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            padding: 15px;
+        }
+        
+        .file-info {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--input-border);
+        }
+        
+        .file-info p {
+            margin: 5px 0;
+        }
+        
+        .file-path {
+            font-family: monospace;
+            word-break: break-all;
+        }
+        
+        @media (max-width: 768px) {
+            .review-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+        <span class="theme-label">Dark Mode</span>
+    </div>
+
+    <div class="container">
+        <h1>Review Document</h1>
+        
+        {% if flash_messages %}
+            <div class="flash-messages">
+                {% for message in flash_messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('view_queue') }}" class="btn-secondary">Back to Queue</a>
+        </div>
+        
+        <div class="file-info">
+            <h3>File Information</h3>
+            <p><strong>Filename:</strong> {{ document.filename }}</p>
+            <p><strong>Path:</strong> <span class="file-path">{{ document.path }}</span></p>
+            <p><strong>Year:</strong> {{ document.year or "Unknown" }}</p>
+        </div>
+        
+        <div class="review-container">
+            <div class="ocr-text-panel">
+                <h3>OCR Text (First Pages)</h3>
+                {{ document.metadata.first_pages_text }}
+            </div>
+            
+            <div class="metadata-panel">
+                <h3>Document Metadata</h3>
+                <p>Review and edit the extracted metadata below:</p>
+                
+                <form method="POST" action="{{ url_for('finalize_document', index=index) }}">
+                    <div class="form-group">
+                        <label for="title">Title: <span class="required">*</span></label>
+                        <input type="text" id="title" name="title" value="{{ document.metadata.title }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="author">Author:</label>
+                        <input type="text" id="author" name="author" value="{{ document.metadata.author }}">
+                        <small>Leave blank if unknown</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="publisher">Publisher: <span class="required">*</span></label>
+                        <input type="text" id="publisher" name="publisher" value="{{ document.metadata.publisher }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="publisher_id">Publisher ID:</label>
+                        <input type="text" id="publisher_id" name="publisher_id" value="{{ document.metadata.publisher_id }}">
+                        <small>Document number (e.g., "PTTI 1990 Vol. 22 No. 11")</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="publication_date">Publication Date:</label>
+                        <input type="text" id="publication_date" name="publication_date" value="{{ document.metadata.publication_date }}">
+                        <small>Leave blank if unknown</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="source">Source: <span class="required">*</span></label>
+                        <input type="text" id="source" name="source" value="{{ document.metadata.source }}" required>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button type="submit" class="btn-primary">Process Document</button>
+                        <form method="POST" action="{{ url_for('skip_document', index=index) }}" style="display: inline;">
+                            <button type="submit" class="btn-secondary">Skip Document</button>
+                        </form>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        {{ js_content|safe }}
+    </script>
+</body>
+</html>
+

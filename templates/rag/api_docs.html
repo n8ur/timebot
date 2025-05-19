@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Search RAG API Documentation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .endpoint {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5 mb-5">
+        <h1>Email Search RAG API Documentation</h1>
+        <p class="lead">This API allows you to search emails using both keyword-based (Whoosh) and semantic (ChromaDB) search.</p>
+        
+        <div class="alert alert-info mt-4">
+            <strong>Base URL:</strong> {{ api_base_url }}
+        </div>
+
+        <h2 class="mt-5">Endpoints</h2>
+
+        <div class="endpoint">
+            <h3>GET /api/info</h3>
+            <p>Returns information about the API and the models being used.</p>
+            
+            <h4>Example Response:</h4>
+            <pre>
+{
+  "name": "Email Search RAG API",
+  "version": "1.0.0",
+  "description": "API for searching emails using Whoosh and ChromaDB",
+  "models": {
+    "embedding": "BAAI/bge-large-en-v1.5",
+    "reranking": "BAAI/bge-reranker-large"
+  }
+}
+            </pre>
+        </div>
+
+        <div class="endpoint">
+            <h3>POST /api/query</h3>
+            <p>Search for emails using a query string.</p>
+            
+            <h4>Request Body:</h4>
+            <pre>
+{
+  "query": "your search query",
+  "mode": "combined",  // Options: "combined", "whoosh", "chroma"
+  "fuzzy": true,       // Enable fuzzy search for Whoosh
+  "similarity_threshold": 2.0,  // Threshold for ChromaDB results
+  "use_reranking": true,  // Whether to use the reranker model
+  "top_k": 10          // Number of results to return
+}
+            </pre>
+            
+            <h4>Example Response:</h4>
+            <pre>
+{
+  "query": "your search query",
+  "results": [
+    {
+      "id": "email-url-or-id",
+      "content": "Full email content...",
+      "metadata": {
+        "from": "sender@example.com",
+        "date": "2023-01-01",
+        "subject": "Email Subject",
+        "url": "https://example.com/email/123",
+        "source": "Whoosh"
+      },
+      "score": 0.95
+    }
+  ]
+}
+            </pre>
+        </div>
+
+        <div class="endpoint">
+            <h3>POST /api/rag</h3>
+            <p>RAG-compatible endpoint for integration with systems like Open WebUI.</p>
+            
+            <h4>Request Body:</h4>
+            <pre>
+{
+  "query": "your search query",
+  "mode": "combined",
+  "fuzzy": true,
+  "similarity_threshold": 2.0,
+  "use_reranking": true,
+  "top_k": 10
+}
+            </pre>
+            
+            <h4>Example Response:</h4>
+            <pre>
+{
+  "results": [
+    {
+      "id": "email-url-or-id",
+      "text": "Full email content...",
+      "metadata": {
+        "from": "sender@example.com",
+        "date": "2023-01-01",
+        "subject": "Email Subject",
+        "url": "https://example.com/email/123",
+        "source": "Whoosh",
+        "score": 0.95
+      }
+    }
+  ]
+}
+            </pre>
+        </div>
+
+        <h2 class="mt-5">Integration with Open WebUI</h2>
+        <p>To use this API with Open WebUI:</p>
+        <ol>
+            <li>In Open WebUI, go to Settings > RAG</li>
+            <li>Add a new RAG provider with the following settings:
+                <ul>
+                    <li>Provider: Custom</li>
+                    <li>Endpoint URL: <code>{{ api_base_url }}api/rag</code></li>
+                    <li>Method: POST</li>
+                </ul>
+            </li>
+            <li>Save the configuration and enable RAG in your conversations</li>
+        </ol>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

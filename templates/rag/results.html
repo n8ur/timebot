@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>time-nuts Mailing List Archive Search Results</h2>
+<br>
+<a href="/" class="btn btn-primary">New Search</a>
+<P>
+<ul class="search-results">
+    {% for result in results %}
+    <li>
+        {% if result.doc_type == "email" %}
+            <b>Subject: {{ result.subject }}</b><br>
+            From: {{ result.from }}<br>
+            Date: {{ result.date }}<br>
+            {{ result.message }}<br>
+            <a href="{{ result.url }}" target="_blank">{{ result.url|safe }}</a><br>
+        {% elif result.doc_type == "document" %}
+            <b>Title: {{ result.title }}</b><br>
+            Author: {{ result.author }}<br>
+            Publisher: {{ result.publisher }}{% if result.publisher_id %} (ID: {{ result.publisher_id }}){% endif %}<br>
+            Year: {{ result.date }}<br>
+            Approx. Position: {{ ((result.chunk_number / result.total_chunks * 10) | round | int * 10) }}%<br>
+
+            {{result.snippet}}<br>
+            <a href="{{ result.url }}" target="_blank">{{ result.url|safe }}</a><br>
+        {% else %}
+            <b>{{ result.subject }}</b><br>
+            From: {{ result.from }}<br>
+            Date: {{ result.date }}<br>
+            {{ result.message }}<br>
+            <a href="{{ result.url }}" target="_blank">{{ result.url|safe }}</a><br>
+        {% endif %}
+        <i>Database: {{ result.search_provider }}</i>
+    </li>
+    {% endfor %}
+</ul>
+<br>
+<a href="/" class="btn btn-primary">New Search</a>
+{% endblock %}
+

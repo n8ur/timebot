@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch PDF OCR Tool</title>
+    <style>
+        {{ css_content|safe }}
+        
+        /* Additional styles for batch processing */
+        .directory-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .directory-input input[type="text"] {
+            flex-grow: 1;
+        }
+        
+        .status-panel {
+            background-color: var(--container-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--input-border);
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .status-label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+        <span class="theme-label">Dark Mode</span>
+    </div>
+
+    <div class="container">
+        <h1>Batch PDF OCR Processing Tool</h1>
+
+        {% if processing_jobs > 0 %}
+            <div class="processing-indicator">
+                <p>⚠️ System is currently processing {{ processing_jobs }} document(s).</p>
+            </div>
+        {% endif %}
+        
+        {% if flash_messages %}
+            <div class="flash-messages">
+                {% for message in flash_messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('view_logs') }}" class="btn-secondary">View Processing Logs</a>
+            <a href="{{ url_for('view_queue') }}" class="btn-secondary">View Queue ({{ queue_length }})</a>
+        </div>
+
+        <h2>Select Directory to Process</h2>
+        <p>Choose a directory containing PDF files to process. The system will scan for PDFs and add them to the processing queue.</p>
+        
+        <form method="POST" action="{{ url_for('scan_directory') }}">
+            <div class="directory-input">
+                <input type="text" id="directory_path" name="directory_path" placeholder="/path/to/pdf/files" required>
+                <button type="submit" class="btn-submit">Scan Directory</button>
+            </div>
+        </form>
+        
+        <div class="status-panel">
+            <h3>System Status</h3>
+            
+            <div class="status-item">
+                <span class="status-label">Active Jobs:</span>
+                <span>{{ processing_jobs }} / {{ max_jobs }}</span>
+            </div>
+            
+            <div class="status-item">
+                <span class="status-label">Queue Length:</span>
+                <span>{{ queue_length }}</span>
+            </div>
+            
+            {% if current_document %}
+            <div class="status-item">
+                <span class="status-label">Current Document:</span>
+                <span>{{ current_document.filename }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        {{ js_content|safe }}
+    </script>
+</body>
+</html>
+

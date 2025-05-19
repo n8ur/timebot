@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Processing Queue</title>
+    <style>
+        {{ css_content|safe }}
+        
+        /* Additional styles for queue page */
+        .queue-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            color: var(--text-color);
+            background-color: var(--container-bg);
+        }
+        
+        .queue-table th, .queue-table td {
+            border: 1px solid var(--input-border);
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .queue-table th {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .queue-table tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="dark"] .queue-table tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .queue-table tr:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] .queue-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .status-pending {
+            background-color: #6c757d;
+        }
+        
+        .status-processing {
+            background-color: #007bff;
+        }
+        
+        .status-ready {
+            background-color: #28a745;
+        }
+        
+        .status-error {
+            background-color: #dc3545;
+        }
+        
+        .empty-queue {
+            text-align: center;
+            padding: 40px;
+            font-style: italic;
+            color: var(--secondary-color);
+        }
+        
+        .action-cell {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+        <span class="theme-label">Dark Mode</span>
+    </div>
+
+    <div class="container">
+        <h1>Document Processing Queue</h1>
+        
+        {% if flash_messages %}
+            <div class="flash-messages">
+                {% for message in flash_messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('index') }}" class="btn-secondary">Back to Home</a>
+            <a href="{{ url_for('view_logs') }}" class="btn-secondary">View Processing Logs</a>
+            {% if queue|length > 0 and queue[0].get('status') == 'ready_for_review' %}
+                <a href="{{ url_for('review_document', index=0) }}" class="btn-primary">Review Next Document</a>
+            {% elif queue|length > 0 and not queue[0].get('status') %}
+                <a href="{{ url_for('get_next_document') }}" class="btn-primary">Process Next Document</a>
+            {% endif %}
+        </div>
+        
+        {% if queue|length > 0 %}
+            <table class="queue-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Filename</th>
+                        <th>Directory</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in queue %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ doc.filename }}</td>
+                        <td>{{ doc.path|replace(doc.filename, '') }}</td>
+                        <td>
+                            {% if doc.get('status') == 'ready_for_review' %}
+                                <span class="status-badge status-ready">Ready for Review</span>
+                            {% elif doc.get('status') == 'error' %}
+                                <span class="status-badge status-error">Error</span>
+                            {% elif loop.index == 1 and current_document %}
+                                <span class="status-badge status-processing">Processing</span>
+                            {% else %}
+                                <span class="status-badge status-pending">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="action-cell">
+                            {% if doc.get('status') == 'ready_for_review' %}
+                                <a href="{{ url_for('review_document', index=loop.index0) }}" class="btn-primary btn-small">Review</a>
+                            {% endif %}
+                            
+                            <form method="POST" action="{{ url_for('skip_document', index=loop.index0) }}" style="display: inline;">
+                                <button type="submit" class="btn-secondary btn-small">Skip</button>
+                            </form>
+                            
+                            {% if doc.get('error') %}
+                                <span title="{{ doc.error }}">⚠️ {{ doc.error|truncate(30) }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-queue">
+                <p>No documents in the processing queue.</p>
+                <p>Use the "Scan Directory" option on the home page to add documents.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        {{ js_content|safe }}
+    </script>
+</body>
+</html>
+

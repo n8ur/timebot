@@ -1,0 +1,209 @@
+# Unified Search Interface Documentation
+
+## Overview
+
+This documentation explains how to use the unified search interface for retrieving results from both ChromaDB and Whoosh databases. The system uses a common `SearchResult` class to standardize results across different data sources.
+
+## Files
+
+The system consists of two main files:
+
+1. `search_result.py` - Contains the unified `SearchResult` class
+2. `whoosh_utils.py` - Contains utilities for working with Whoosh indexes, including the new unified search functions
+
+## Installation Requirements
+
+Ensure you have the following dependencies installed:
+
+```bash
+pip install whoosh
+```
+
+## SearchResult Class
+
+The `SearchResult` class provides a standardized format for search results from different sources.
+
+### Properties
+
+- `source`: String indicating the source (e.g., "ChromaDB-Emails", "Whoosh-Documents")
+- `doc_type`: String indicating document type ("email", "document", "technical")
+- `doc_id`: Unique identifier for the document
+- `snippet`: Text excerpt from the document content
+- `score`: Relevance score (normalized to 0-1 range)
+- `title`: Document title (if available)
+- `author`: Document author (if available)
+- `publisher`: Document publisher (if available)
+- `publisher_id`: Publisher identifier (if available)
+- `from_field`: Email sender (for email documents)
+- `date`: Document date as a datetime object
+- `subject`: Email subject (for email documents)
+- `url`: Document URL (if available)
+- `additional_metadata`: Dictionary of additional metadata
+- `chunk_id`: Identifier for document chunk (if chunked)
+- `chunk_index`: Index of the chunk within the document
+- `total_chunks`: Total number of chunks in the document
+
+## Using the Unified Search Interface
+
+### Basic Usage
+
+```python
+from whoosh_utils import search_emails_unified, search_documents_unified
+
+# Search emails
+email_results = search_emails_unified(
+    index_dir="/path/to/email/index",
+    query_str="important meeting",
+    limit=10
+)
+
+# Search documents
+document_results = search_documents_unified(
+    index_dir="/path/to/document/index",
+    query_str="technical specification",
+    limit=10
+)
+
+# Process results
+for result in email_results:
+    print(f"Email: {result.subject}")
+    print(f"From: {result.from_field}")
+    print(f"Date: {result.date}")
+    print(f"Score: {result.score}")
+    print(f"Snippet: {result.snippet}")
+    print("---")
+
+for result in document_results:
+    print(f"Document: {result.title}")
+    print(f"Author: {result.author}")
+    print(f"Score: {result.score}")
+    print(f"Snippet: {result.snippet}")
+    print("---")
+```
+
+### Combining Results from Multiple Sources
+
+You can combine results from different sources and sort them by relevance:
+
+```python
+from whoosh_utils import search_emails_unified, search_documents_unified
+from chroma_utils import search_emails_unified as chroma_search_emails
+from chroma_utils import search_documents_unified as chroma_search_documents
+
+def unified_search(query, limit=20):
+    # Search across all sources
+    whoosh_emails = search_emails_unified("path/to/whoosh/email/index", query, limit=limit)
+    whoosh_docs = search_documents_unified("path/to/whoosh/doc/index", query, limit=limit)
+    chroma_emails = chroma_search_emails("collection_name", query, limit=limit)
+    chroma_docs = chroma_search_documents("collection_name", query, limit=limit)
+    
+    # Combine all results
+    all_results = whoosh_emails + whoosh_docs + chroma_emails + chroma_docs
+    
+    # Sort by relevance score (descending)
+    sorted_results = sorted(all_results, key=lambda x: x.score, reverse=True)
+    
+    # Return top results
+    return sorted_results[:limit]
+
+# Use the unified search
+results = unified_search("quarterly report")
+```
+
+## API Reference
+
+### search_result.py
+
+#### SearchResult Class
+
+```python
+class SearchResult:
+    def __init__(
+        self,
+        source: str,
+        doc_type: str,
+        doc_id: str,
+        snippet: str,
+        score: float,
+        title: str = None,
+        author: str = None,
+        publisher: str = None,
+        publisher_id: str = None,
+        from_field: str = None,
+        date: datetime = None,
+        subject: str = None,
+        url: str = None,
+        additional_metadata: Dict[str, Any] = None,
+        chunk_id: str = None,
+        chunk_index: int = None,
+        total_chunks: int = None,
+    )
+```
+
+Factory Methods:
+- `from_whoosh_email(whoosh_result)`: Create from Whoosh email result
+- `from_whoosh_document(whoosh_result)`: Create from Whoosh document result
+
+### whoosh_utils.py
+
+#### Unified Search Functions
+
+```python
+def search_emails_unified(
+    index_dir: str, 
+    query_str: str, 
+    field: str = "content", 
+    limit: int = 10
+) -> List[SearchResult]
+```
+Search emails in a Whoosh index and return unified SearchResult objects.
+
+```python
+def search_documents_unified(
+    index_dir: str, 
+    query_str: str, 
+    field: str = "content", 
+    limit: int = 10
+) -> List[SearchResult]
+```
+Search documents in a Whoosh index and return unified SearchResult objects.
+
+#### Legacy Functions
+
+The module also contains all the original Whoosh utility functions:
+
+- `define_whoosh_schema(schema_type)`: Define schema for different document types
+- `initialize_whoosh_index(index_dir, schema_type)`: Create or open a Whoosh index
+- `open_whoosh_index(index_dir)`: Open an existing Whoosh index
+- `document_exists_in_whoosh(index, doc_id)`: Check if a document exists
+- `add_document_to_whoosh(writer, chunk_text, metadata, schema_type, verbose)`: Add a document
+- `search_whoosh(index_dir, query_str, field, limit)`: Basic search function
+- `get_document_by_id(index_dir, doc_id)`: Retrieve a document by ID
+- `advanced_search_whoosh(index_dir, query_str, fields, filter_terms, limit, sort_by, reverse)`: Advanced search
+- `get_all_documents(index_dir, limit)`: Retrieve all documents
+- `delete_document(index_dir, doc_id)`: Delete a document
+- `get_index_stats(index_dir)`: Get index statistics
+
+## Error Handling
+
+The search functions will return empty lists if no results are found. When working with document retrieval functions, check for None returns:
+
+```python
+result = get_document_by_id(index_dir, doc_id)
+if result is None:
+    print("Document not found")
+else:
+    # Process the document
+```
+
+## Best Practices
+
+1. **Normalize Query Strings**: Consider normalizing query strings (lowercase, remove special characters) for more consistent results.
+
+2. **Handle Date Fields Carefully**: Date fields are parsed into datetime objects when available, but may be None if parsing fails.
+
+3. **Limit Result Size**: Always specify a reasonable limit to avoid performance issues with large result sets.
+
+4. **Check Source Field**: When processing mixed results, check the `source` field to determine the origin of each result.
+
+5. **Use Additional Metadata**: The `additional_metadata` dictionary contains fields that weren't mapped to standard properties.

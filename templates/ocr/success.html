@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing Complete</title>
+    <style>
+        {{ css_content|safe }}
+    </style>
+
+</head>
+<body>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+        <span class="theme-label">Dark Mode</span>
+    </div>
+
+    <div class="container">
+        <h1>PDF Processing Complete</h1>
+        
+        <div class="success-message">
+            <p>The document "<strong>{{ title }}</strong>" has been successfully processed.</p>
+            
+            <div class="result-details">
+                <p><strong>Sequence Number:</strong> {{ sequence_number }}</p>
+                <p><strong>Document URL:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+            </div>
+            
+            <div class="actions">
+                <a href="{{ url_for('download_pdf_file', filename=sequence_number|string + '.pdf') }}" class="btn-primary">Download PDF</a>
+                <a href="{{ request.url_for('index') }}" class="btn-secondary">Process Another PDF</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        {{ js_content|safe }}
+    </script>
+
+    
+</body>
+</html>
+

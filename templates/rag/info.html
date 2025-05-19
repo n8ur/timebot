@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="info-page">
+  <h2>Information and Sources</h2>
+
+  <div class="section">
+    <h3>About Timebot-Search</h3>
+    <p>
+      Timebot-Search is an AI-assisted search engine for queries about time
+      and frequency measurement topics. It searches two collections:
+    </p>
+    <ul>
+      <li>
+        The
+        <a href="http://leapsecond.com/time-nuts.htm">time-nuts</a> mailing
+        list, which currently includes nearly 110,000 messages over a more
+        than 20 year span; and
+      </li>
+      <li>
+        A collection, currently with over 100 documents, of relevant 
+        technical publications, application notes, equipment manuals, 
+        and other reference material published by NIST, Hewlett-Packard, 
+        and others.
+      </li>
+    </ul>
+
+    <p>
+      The two collections are indexed two ways: into a vector (similarity)
+      database using an embedding model, and into a full-text index. Emails 
+      are indexed as single entities, while the documents are broken into 
+      "chunks" of about 400 words that are processed individually.
+    </p>
+
+    <p>
+      The vector database does a semantic comparison between your request 
+      and the documents it has indexed, returning the most similar ones. 
+      The full-text index searches for exact matches. Your query will get 
+      results from both databases which will then be combined and processed 
+      by a "reranker" that uses another model to put the most relevant 
+      responses first.
+    </p>
+  </div>
+
+  <div class="section">
+    <h3>Current Knowledge Base Documents</h3>
+    <p><em
+        >(Links are to the PDF version available at febo.com)</em
+      ></p>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %} {% if warning %}
+    <div class="alert alert-warning">
+      {% if warning is string %} {{ warning }} {% else %}
+      <ul>
+        {% for warn in warning %}
+        <li>{{ warn }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endif %} {% if documents %}
+    <div class="bibliography-container">
+      <ul>
+        {% for doc in documents %} {% set metadata = doc.get('metadata', {}) %}
+        {% set title = metadata.get('title', 'Untitled') %} {% set author =
+        metadata.get('author', 'Unknown Author') %} {% set publisher =
+        metadata.get('publisher', '') %} {% set year =
+        metadata.get('publication_date', '') %} {% if year is iterable and year
+        is not string %} {% set year = ''.join(year) %} {% endif %} {% set url =
+        doc.get('url', '') %}
+        <li>
+          <strong
+            >{{ title }}</strong
+          >
+          {% if author and author != 'Unknown Author' %} by {{ author }}{% endif
+          %} {% if publisher %}, {{ publisher }}{% endif %} {% if year %}, {{
+          year }}{% endif %} {% if url %},
+          <a href="{{ url }}" target="_blank">{{ url }}</a>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <p class="document-count">Total documents: {{ total_documents }}</p>
+    {% endif %}
+  </div>
+
+  <div class="section">
+    <h3>Limitations</h3>
+    <p>While Timebot strives for accuracy, please note:</p>
+    <ul>
+      <li>It may not have access to the most recent publications or developments</li>
+      <li>Complex technical questions might require simplification</li>
+      <li>For critical applications, always verify information with primary sources</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>Contact</h3>
+    <p>
+      For questions, feedback, or suggestions, please contact:<br />
+      John Ackermann -- jra at febo dot com
+    </p>
+  </div>
+
+  <div class="mt-4">
+    <a href="/" class="btn btn-primary">Return to Search</a>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,319 @@
+```
+# ChromaDB Utilities Documentation
+
+## Core Data Structures
+
+### SearchResult
+A unified data structure for search results from different sources.
+
+```python
+@dataclass
+class SearchResult:
+    # Core identification fields
+    source: Literal["ChromaDB-Emails", "ChromaDB-Documents", "Whoosh-Emails", "Whoosh-Documents"]
+    doc_type: Literal["email", "document"]
+    doc_id: str  # Unique identifier for the document
+    
+    # Content fields
+    snippet: str  # The relevant text excerpt
+    score: float  # Search relevance score
+    
+    # Common metadata with standardized types
+    title: Optional[str] = None
+    date: Optional[datetime] = None
+    url: Optional[str] = None
+    
+    # Email-specific fields
+    from_field: Optional[str] = None  # Sender for emails
+    subject: Optional[str] = None  # Subject for emails
+    
+    # Document-specific fields
+    author: Optional[str] = None
+    publisher: Optional[str] = None
+    publisher_id: Optional[str] = None
+    
+    # For any additional metadata that doesn't fit the standard fields
+    additional_metadata: Dict[str, Any] = field(default_factory=dict)
+    
+    # For chunk-specific information (if applicable)
+    chunk_id: Optional[str] = None
+    chunk_index: Optional[int] = None
+    total_chunks: Optional[int] = None
+```
+
+Factory methods:
+- `from_chroma_email(chroma_result)`: Create from ChromaDB email result
+- `from_whoosh_email(whoosh_result)`: Create from Whoosh email result
+- `from_chroma_document(chroma_result)`: Create from ChromaDB document result
+- `from_whoosh_document(whoosh_result)`: Create from Whoosh document result
+- `from_document(source, doc_result)`: Generic factory for document results
+
+### ChromaDBContext
+Context for managing ChromaDB connections and collections.
+
+```python
+@dataclass
+class ChromaDBContext:
+    client: chromadb.PersistentClient
+    collection: chromadb.Collection
+    embedding_model: SentenceTransformer
+```
+
+## Core Functions
+
+### Collection Management
+
+#### open_collection
+```python
+def open_collection(
+    collection_name: str, 
+    db_path: str, 
+    embedding_model_name: str,
+    force_recreate: bool = False
+) -> Optional[ChromaDBContext]
+```
+Opens an existing ChromaDB collection or creates a new one if it doesn't exist.
+
+**Parameters:**
+- `collection_name`: Name of the collection
+- `db_path`: Path to the ChromaDB directory
+- `embedding_model_name`: Name of the embedding model to use
+- `force_recreate`: If True, recreate the collection even if it exists
+
+**Returns:** ChromaDBContext object or None if there was an error
+
+#### open_existing_collection
+```python
+def open_existing_collection(
+    collection_name: str, 
+    db_path: str, 
+    embedding_model_name: str
+) -> ChromaDBContext
+```
+Opens an existing ChromaDB collection. Will raise an exception if the collection doesn't exist.
+
+**Parameters:**
+- `collection_name`: Name of the collection
+- `db_path`: Path to the ChromaDB directory
+- `embedding_model_name`: Name of the embedding model to use
+
+**Returns:** ChromaDBContext object
+
+**Raises:** ValueError if the collection doesn't exist
+
+#### close_collection
+```python
+def close_collection(collection_name: Optional[str] = None)
+```
+Closes a specific collection or all collections.
+
+**Parameters:**
+- `collection_name`: Name of the collection to close, or None to close all collections
+
+### Document Operations
+
+#### document_exists
+```python
+def document_exists(collection_name: str, doc_hash: str) -> bool
+```
+Checks if a document with the given hash already exists in the collection.
+
+**Parameters:**
+- `collection_name`: Name of the collection
+- `doc_hash`: Hash of the document to check
+
+**Returns:** True if the document exists, False otherwise
+
+#### add_document
+```python
+def add_document(
+    collection_name: str, 
+    content: str, 
+    metadata: Dict[str, Any], 
+    verbose: bool = False
+) -> bool
+```
+Adds a document to the collection if it doesn't already exist.
+
+**Parameters:**
+- `collection_name`: Name of the collection
+- `content`: Text content of the document
+- `metadata`: Metadata dictionary (must include a "hash" field)
+- `verbose`: Whether to print verbose output
+
+**Returns:** True if the document was added, False if it already existed
+
+#### add_documents_batch
+```python
+def add_documents_batch(
+    collection_name: str,
+    contents: List[str],
+    metadatas: List[Dict[str, Any]],
+    batch_size: int = 64,
+    verbose: bool = False
+) -> List[bool]
+```
+Adds multiple documents in optimized batches, skipping those that already exist.
+
+**Parameters:**
+- `collection_name`: Name of the collection
+- `contents`: List of document contents
+- `metadatas`: List of metadata dictionaries (each must include a "hash" field)
+- `batch_size`: Number of documents to process in each batch
+- `verbose`: Whether to print verbose output
+
+**Returns:** List of booleans indicating which documents were added
+
+### Search Functions
+
+#### search_emails
+```python
+def search_emails(
+    collection_name: str,
+    query: str,
+    limit: int = 10,
+    similarity_threshold: float = 0.0,
+    verbose: bool = False
+) -> List[Dict[str, Any]]
+```
+Searches the email collection with the given query (legacy format).
+
+**Parameters:**
+- `collection_name`: Name of the collection to search
+- `query`: The search query
+- `limit`: Maximum number of results to return
+- `similarity_threshold`: Minimum similarity score (0-1) for results
+- `verbose`: Whether to print verbose output
+
+**Returns:** List of dictionaries with search results
+
+#### search_documents
+```python
+def search_documents(
+    collection_name: str,
+    query: str,
+    limit: int = 10,
+    similarity_threshold: float = 0.0,
+    verbose: bool = False
+) -> List[Dict[str, Any]]
+```
+Searches the documents collection with the given query (legacy format).
+
+**Parameters:**
+- `collection_name`: Name of the collection to search
+- `query`: The search query
+- `limit`: Maximum number of results to return
+- `similarity_threshold`: Minimum similarity score (0-1) for results
+- `verbose`: Whether to print verbose output
+
+**Returns:** List of dictionaries with search results
+
+#### search_emails_unified
+```python
+def search_emails_unified(
+    collection_name: str,
+    query: str,
+    limit: int = 10,
+    similarity_threshold: float = 0.0,
+    verbose: bool = False
+) -> List[SearchResult]
+```
+Searches the email collection with the given query and returns unified SearchResult objects.
+
+**Parameters:**
+- `collection_name`: Name of the collection to search
+- `query`: The search query
+- `limit`: Maximum number of results to return
+- `similarity_threshold`: Minimum similarity score (0-1) for results
+- `verbose`: Whether to print verbose output
+
+**Returns:** List of SearchResult objects
+
+#### search_documents_unified
+```python
+def search_documents_unified(
+    collection_name: str,
+    query: str,
+    limit: int = 10,
+    similarity_threshold: float = 0.0,
+    verbose: bool = False
+) -> List[SearchResult]
+```
+Searches the documents collection with the given query and returns unified SearchResult objects.
+
+**Parameters:**
+- `collection_name`: Name of the collection to search
+- `query`: The search query
+- `limit`: Maximum number of results to return
+- `similarity_threshold`: Minimum similarity score (0-1) for results
+- `verbose`: Whether to print verbose output
+
+**Returns:** List of SearchResult objects
+
+### Legacy Compatibility Functions
+
+#### initialize_chromadb
+```python
+def initialize_chromadb(collection_name, db_path, embedding_model_name)
+```
+Legacy function for backward compatibility. Equivalent to `open_collection`.
+
+#### ingest_to_chromadb
+```python
+def ingest_to_chromadb(collection, content, metadata, verbose=False)
+```
+Legacy function for backward compatibility. Equivalent to `add_document`.
+
+## Migration Guide
+
+### Converting Legacy Code to Use Unified Search Results
+
+#### Before:
+```python
+results = search_emails("email_collection", "search query", limit=5)
+for result in results:
+    print(f"From: {result['from']}")
+    print(f"Subject: {result['subject']}")
+    print(f"Content: {result['content']}")
+```
+
+#### After:
+```python
+results = search_emails_unified("email_collection", "search query", limit=5)
+for result in results:
+    print(f"From: {result.from_field}")
+    print(f"Subject: {result.subject}")
+    print(f"Content: {result.snippet}")
+```
+
+### Combining Results from Multiple Sources
+
+```python
+# Get results from all sources
+email_results_chroma = search_emails_unified("chroma_email_collection", query)
+doc_results_chroma = search_documents_unified("chroma_doc_collection", query)
+email_results_whoosh = whoosh_search_emails_unified(query)
+doc_results_whoosh = whoosh_search_documents_unified(query)
+
+# Combine all results
+all_results = email_results_chroma + doc_results_chroma + email_results_whoosh + doc_results_whoosh
+
+# Sort by score
+all_results.sort(key=lambda x: x.score, reverse=True)
+
+# Process unified results
+for result in all_results[:10]:  # Top 10 results
+    print(f"Source: {result.source}")
+    print(f"Score: {result.score}")
+    
+    if result.doc_type == "email":
+        print(f"From: {result.from_field}")
+        print(f"Subject: {result.subject}")
+    else:  # document
+        print(f"Title: {result.title}")
+        print(f"Author: {result.author}")
+    
+    print(f"Content: {result.snippet[:200]}...")
+    print("-" * 50)
+```
+```

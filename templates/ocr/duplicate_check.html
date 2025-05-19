@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potential Duplicate Document</title>
+    <style>
+        {{ css_content|safe }}
+        
+        /* Additional styles for duplicate check page using theme variables */
+        .duplicate-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 5px solid #ffc107;
+        }
+        
+        [data-theme="dark"] .duplicate-warning {
+            background-color: #2c2a00;
+            color: #ffc107;
+            border-left: 5px solid #ffc107;
+        }
+        
+        .similar-docs {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .similar-doc-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+        }
+        
+        .similarity-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            background-color: var(--accent-color);
+            color: white;
+            margin-left: 10px;
+        }
+        
+        .metadata-list {
+            margin: 10px 0;
+            padding-left: 20px;
+            color: var(--text-color);
+        }
+        
+        .metadata-list li {
+            margin-bottom: 5px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-proceed {
+            background-color: #ffc107;
+            color: #333;
+        }
+        
+        .btn-proceed:hover {
+            background-color: #e0a800;
+            color: #333;
+        }
+        
+        [data-theme="dark"] .btn-proceed {
+            background-color: #ffc107;
+            color: #333;
+        }
+        
+        [data-theme="dark"] .btn-proceed:hover {
+            background-color: #d6a406;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+        <span class="theme-label">Dark Mode</span>
+    </div>
+
+    <div class="container">
+        <h1>Potential Duplicate Document</h1>
+        
+        {% if flash_messages %}
+        <div class="flash-messages">
+            {% for message in flash_messages %}
+            <div class="alert">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="duplicate-warning">
+            <h2>⚠️ Similar documents found</h2>
+            <p>The document you're trying to upload with title "<strong>{{ title }}</strong>" appears similar to existing documents in the system.</p>
+            <p>Please review the similar documents below before proceeding.</p>
+        </div>
+        
+        <div class="similar-docs">
+            <h3>Similar Documents</h3>
+            
+            {% for entry in similar_entries %}
+            <div class="similar-doc-item">
+                <h4>
+                    {{ entry.metadata.title }}
+                    <span class="similarity-badge">{{ entry.similarity }}% match</span>
+                </h4>
+                
+                <ul class="metadata-list">
+                    <li><strong>Sequence Number:</strong> {{ entry.sequence_number }}</li>
+                    <li><strong>Author:</strong> {{ entry.metadata.author or "Unknown" }}</li>
+                    <li><strong>Publisher:</strong> {{ entry.metadata.publisher }}</li>
+                    <li><strong>Publication Date:</strong> {{ entry.metadata.publication_date or "Unknown" }}</li>
+                    <li><strong>Source:</strong> {{ entry.metadata.source }}</li>
+                    <li><strong>Original Filename:</strong> {{ entry.metadata.original_filename }}</li>
+                    <li><strong>Processed:</strong> {{ entry.formatted_timestamp }}</li>
+                </ul>
+                
+                {% set base_url = config.DOC_BASE_URL %}
+                {% if base_url.endswith('/') %}
+                    {% set base_url = base_url[:-1] %}
+                {% endif %}
+                {% set pdf_url = base_url ~ '/' ~ entry.sequence_number ~ '.pdf' %}
+                
+                <a href="{{ pdf_url }}" target="_blank" class="btn-secondary">View PDF</a>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="action-buttons">
+            <form action="{{ request.url_for('proceed_with_upload') }}" method="POST">
+                <input type="hidden" name="temp_file_id" value="{{ temp_file_id }}">
+                <button type="submit" class="btn-proceed">Proceed Anyway</button>
+            </form>
+            
+            <a href="{{ request.url_for('index') }}" class="btn-secondary">Cancel Upload</a>
+        </div>
+    </div>
+    
+    <script>
+        {{ js_content|safe }}
+    </script>
+</body>
+</html>
+

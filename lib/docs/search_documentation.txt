@@ -1,0 +1,188 @@
+# Unified Search Interface Documentation
+
+## Overview
+
+This documentation explains how to use the unified search interface for retrieving results from both ChromaDB and Whoosh databases. The system uses a common `SearchResult` class to standardize results across different data sources.
+
+## Core Data Structure: SearchResult
+
+```python
+@dataclass
+class SearchResult:
+    # Core identification fields
+    source: Literal["ChromaDB-Emails", "ChromaDB-Documents", "Whoosh-Emails", "Whoosh-Documents"]
+    doc_type: Literal["email", "document"]
+    doc_id: str  # Unique identifier for the document
+    
+    # Content fields
+    snippet: str  # The relevant text excerpt
+    score: float  # Search relevance score
+    
+    # Common metadata with standardized types
+    title: Optional[str] = None
+    date: Optional[datetime] = None
+    url: Optional[str] = None
+    
+    # Email-specific fields
+    from_field: Optional[str] = None  # Sender for emails
+    subject: Optional[str] = None  # Subject for emails
+    
+    # Document-specific fields
+    author: Optional[str] = None
+    publisher: Optional[str] = None
+    publisher_id: Optional[str] = None
+    
+    # For any additional metadata that doesn't fit the standard fields
+    additional_metadata: Dict[str, Any] = field(default_factory=dict)
+    
+    # For chunk-specific information (if applicable)
+    chunk_id: Optional[str] = None
+    chunk_index: Optional[int] = None
+    total_chunks: Optional[int] = None
+```
+
+## Factory Methods
+
+Both modules provide factory methods to create SearchResult objects:
+
+- `from_chroma_email(chroma_result)`: Create from ChromaDB email result
+- `from_whoosh_email(whoosh_result)`: Create from Whoosh email result
+- `from_chroma_document(chroma_result)`: Create from ChromaDB document result
+- `from_whoosh_document(whoosh_result)`: Create from Whoosh document result
+
+## Unified Search Functions
+
+### ChromaDB Functions
+
+```python
+def search_emails_unified(
+    collection_name: str,
+    query: str,
+    limit: int = 10,
+    similarity_threshold: float = 0.0,
+    verbose: bool = False
+) -> List[SearchResult]
+
+def search_documents_unified(
+    collection_name: str,
+    query: str,
+    limit: int = 10,
+    similarity_threshold: float = 0.0,
+    verbose: bool = False
+) -> List[SearchResult]
+```
+
+### Whoosh Functions
+
+```python
+def search_emails_unified(
+    index_dir: str, 
+    query_str: str, 
+    field: str = "content", 
+    limit: int = 10
+) -> List[SearchResult]
+
+def search_documents_unified(
+    index_dir: str, 
+    query_str: str, 
+    field: str = "content", 
+    limit: int = 10
+) -> List[SearchResult]
+```
+
+## Migration Guide
+
+### Converting Legacy Code to Use Unified Search Results
+
+#### Before (ChromaDB):
+```python
+results = search_emails("email_collection", "search query", limit=5)
+for result in results:
+    print(f"From: {result['from']}")
+    print(f"Subject: {result['subject']}")
+    print(f"Content: {result['content']}")
+```
+
+#### After (ChromaDB):
+```python
+results = search_emails_unified("email_collection", "search query", limit=5)
+for result in results:
+    print(f"From: {result.from_field}")
+    print(f"Subject: {result.subject}")
+    print(f"Content: {result.snippet}")
+```
+
+#### Before (Whoosh):
+```python
+results = search_whoosh("/path/to/email/index", "search query", limit=5)
+for result in results:
+    print(f"From: {result['from']}")
+    print(f"Subject: {result['subject']}")
+    print(f"Content: {result['content']}")
+```
+
+#### After (Whoosh):
+```python
+results = search_emails_unified("/path/to/email/index", "search query", limit=5)
+for result in results:
+    print(f"From: {result.from_field}")
+    print(f"Subject: {result.subject}")
+    print(f"Content: {result.snippet}")
+```
+
+## Combining Results from Multiple Sources
+
+```python
+# Get results from all sources
+email_results_chroma = chromadb_utils.search_emails_unified("chroma_email_collection", query)
+doc_results_chroma = chromadb_utils.search_documents_unified("chroma_doc_collection", query)
+email_results_whoosh = whoosh_utils.search_emails_unified("/path/to/email/index", query)
+doc_results_whoosh = whoosh_utils.search_documents_unified("/path/to/doc/index", query)
+
+# Combine all results
+all_results = email_results_chroma + doc_results_chroma + email_results_whoosh + doc_results_whoosh
+
+# Sort by score
+all_results.sort(key=lambda x: x.score, reverse=True)
+
+# Process unified results
+for result in all_results[:10]:  # Top 10 results
+    print(f"Source: {result.source}")
+    print(f"Score: {result.score}")
+    
+    if result.doc_type == "email":
+        print(f"From: {result.from_field}")
+        print(f"Subject: {result.subject}")
+    else:  # document
+        print(f"Title: {result.title}")
+        print(f"Author: {result.author}")
+    
+    print(f"Content: {result.snippet[:200]}...")
+    print("-" * 50)
+```
+
+## Key Differences Between ChromaDB and Whoosh Functions
+
+1. **Parameter Names**:
+   - ChromaDB uses `collection_name` to identify the data source
+   - Whoosh uses `index_dir` to identify the data source
+
+2. **Additional Parameters**:
+   - ChromaDB functions accept `similarity_threshold` and `verbose` parameters
+   - Whoosh functions accept a `field` parameter to specify which field to search
+
+3. **Return Format**:
+   - Both return a List[SearchResult] with the same structure
+   - The `source` field will indicate which system the result came from
+
+## Best Practices
+
+1. **Check Source Field**: When processing mixed results, check the `source` field to determine the origin of each result.
+
+2. **Handle Date Fields Carefully**: Date fields are parsed into datetime objects when available, but may be None if parsing fails.
+
+3. **Limit Result Size**: Always specify a reasonable limit to avoid performance issues with large result sets.
+
+4. **Use Additional Metadata**: The `additional_metadata` dictionary contains fields that weren't mapped to standard properties.
+
+5. **Error Handling**: The search functions will return empty lists if no results are found.

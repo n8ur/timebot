@@ -1,0 +1,47 @@
+# Backup and temporary files
+*.bak
+*.orig
+*.new
+*~
+*.swp
+*.swo
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so # if you have compiled C extensions
+
+# Virtual environments
+venv/
+env/
+.venv/
+*.venv
+
+# IDE / Editor specific (Cursor/VSCode)
+.vscode/
+# .cursor/ # If Cursor creates project-specific metadata here you want to ignore
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Configuration files that might contain secrets (if you have local overrides)
+# .env
+# config.local.py
+
+# Build artifacts (if you have a build process)
+# build/
+# dist/
+# *.egg-info/
+
+# Database files (if any small test dbs were to end up here,
+# though your main GBs are handled by LXC clone)
+# *.db
+# *.sqlite
+# *.sqlite3
+

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Processing Logs</title>
+    <style>
+        {{ css_content|safe }}
+        /* Table styles that respect theme variables */
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            color: var(--text-primary, #333);
+            background-color: var(--bg-primary, #fff);
+        }
+        .log-table th, .log-table td {
+            border: 1px solid var(--border-color, #ddd);
+            padding: 8px;
+            text-align: left;
+        }
+        .log-table th {
+            background-color: var(--bg-secondary, #f2f2f2);
+            position: sticky;
+            top: 0;
+        }
+        .log-table tr:nth-child(even) {
+            background-color: var(--bg-alt, #f9f9f9);
+        }
+        .log-table tr:hover {
+            background-color: var(--bg-hover, #f1f1f1);
+        }
+        .log-container {
+            max-height: 70vh;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 4px;
+        }
+        .metadata-cell {
+            max-width: 450px;
+            overflow-wrap: break-word;
+        }
+        .empty-log {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: var(--text-muted, #666);
+        }
+        .actions-cell {
+            white-space: nowrap;
+        }
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+        <span class="theme-label">Dark Mode</span>
+    </div>
+
+    <div class="container">
+        <h1>Document Processing Logs</h1>
+        
+        {% if flash_messages %}
+        <div class="flash-messages">
+            {% for message in flash_messages %}
+            <div class="alert">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('index') }}" class="btn-secondary">Back to Upload</a>
+        </div>
+        
+        <div class="log-container">
+            {% if log_entries %}
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Sequence #</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Publisher</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in log_entries %}
+                    <tr>
+                        <td>{{ entry.formatted_timestamp }}</td>
+                        <td>{{ entry.sequence_number }}</td>
+                        <td class="metadata-cell">{{ entry.metadata.title }}</td>
+                        <td>{{ entry.metadata.author }}</td>
+                        <td>{{ entry.metadata.publisher }}</td>
+                        <td class="actions-cell">
+                            {% set base_url = config.DOC_BASE_URL %}
+                            {% if base_url.endswith('/') %}
+                                {% set base_url = base_url[:-1] %}
+                            {% endif %}
+                            {% set pdf_url = base_url ~ '/' ~ entry.sequence_number ~ '.pdf' %}
+    
+                            <a href="{{ pdf_url }}" target="_blank" class="btn-secondary btn-small">PDF</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-log">
+                <p>No document processing logs found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        {{ js_content|safe }}
+    </script>
+</body>
+</html>
+
