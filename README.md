@@ -18,7 +18,7 @@ LLM.
 
 ## Authors
 
-John Ackermann N8UR jra at febo dot com
+John Ackermann N8UR  -- jra at febo dot com
 
 ## Version History
 * 0.1
