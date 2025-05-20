@@ -193,11 +193,14 @@ def format_references(rag_results: List[Dict[str, Any]]) -> str:
                 reference = f'[{i}] Document: "{title}"; {attribution}{position_string}'
 
                 # --- Add correct download URL for document references ---
-                from shared.utils import make_prefixed_document_url
+                from shared.utils import make_prefixed_document_url, ensure_timebot_prefix
+                import os
                 doc_filename = metadata.get("file_name")
                 if doc_filename:
-                    # Assume download endpoint is /download/pdf/<filename>
-                    doc_url = make_prefixed_document_url(doc_filename, "/download/pdf/")
+                    # Only use the base name (no directory paths)
+                    doc_basename = os.path.basename(doc_filename)
+                    doc_basename = ensure_timebot_prefix(doc_basename)
+                    doc_url = make_prefixed_document_url(doc_basename)
                     reference += f" [Link]({doc_url})"
 
             elif doc_type == "web":
