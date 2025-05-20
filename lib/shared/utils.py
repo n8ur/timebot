@@ -8,13 +8,12 @@ import copy
 # Configurable file prefix for document filenames
 FILE_PREFIX = "timebot-"
 
-from config import DOC_BASE_URL
-
-def make_prefixed_document_url(file_name: str) -> str:
+def make_prefixed_document_url(file_name: str, base_url: str) -> str:
     """
-    Ensure the filename is prefixed and return the correct download URL for documents using DOC_BASE_URL.
+    Ensure the filename is prefixed and return the correct download URL for documents using base_url.
     Args:
         file_name: The raw filename from metadata
+        base_url: The base URL for document downloads (e.g., 'https://febo.com/timebot_docs')
     Returns:
         The formatted download URL (e.g., 'https://febo.com/timebot_docs/timebot-foo.pdf')
     """
@@ -22,9 +21,8 @@ def make_prefixed_document_url(file_name: str) -> str:
         return "#"
     if not file_name.startswith(FILE_PREFIX):
         file_name = f"{FILE_PREFIX}{file_name}"
-    # Remove any leading slash from file_name
     file_name = file_name.lstrip("/")
-    base_url = DOC_BASE_URL.rstrip('/')
+    base_url = base_url.rstrip('/')
     return f"{base_url}/{file_name}"
 
 def ensure_timebot_prefix(filename: str) -> str:
