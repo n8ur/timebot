@@ -16,6 +16,7 @@ sys.path.append("/usr/local/lib/timebot/lib")
 
 # Import the config module
 from shared.config import config
+from shared.utils import ensure_timebot_prefix, make_timebot_filename
 
 # FastAPI imports
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Request, Depends
@@ -317,7 +318,7 @@ async def process_uploaded_file(request: Request, temp_file_path: str, metadata:
 
             # Save the original PDF with the sequence number
             pdf_destination = os.path.join(
-                app_config["DOC_PDF_DIR"], f"{result['sequence_number']}.pdf"
+                app_config["DOC_PDF_DIR"], make_timebot_filename(result['sequence_number'], "pdf")
             )
 
             # Ensure directory exists
@@ -382,7 +383,8 @@ async def process_uploaded_file(request: Request, temp_file_path: str, metadata:
 @app.get("/download/pdf/{filename}")
 async def download_pdf_file(filename: str):
     """Download a PDF file"""
-    file_path = os.path.join(app_config["DOC_PDF_DIR"], filename)
+    normalized_filename = ensure_timebot_prefix(filename)
+    file_path = os.path.join(app_config["DOC_PDF_DIR"], normalized_filename)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path)

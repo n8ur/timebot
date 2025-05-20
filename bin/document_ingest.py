@@ -28,7 +28,7 @@ from shared.chromadb_utils import (
     add_document,
     close_collection
 )
-from shared.utils import compute_hash, chunk_document, compute_chunk_hash
+from shared.utils import compute_hash, chunk_document, compute_chunk_hash, ensure_timebot_prefix, make_timebot_filename
 from shared.whoosh_utils import (
     initialize_whoosh_index,
     document_exists_in_whoosh,
@@ -76,7 +76,8 @@ def extract_metadata_and_content(file_path):
         "sequence_number": "Unknown",
         "url": "Unknown",
         "processing_date": "Unknown",
-        "file_name": str(file_path),
+        # file_name will be set after parsing sequence_number
+        "file_name": None,
     }
 
     with open(file_path, "r", encoding="utf-8") as f:
@@ -128,6 +129,15 @@ def extract_metadata_and_content(file_path):
                 last_metadata_index = i
 
         content = "\n".join(lines[last_metadata_index + 1:]).strip()
+
+    # Set the file_name using the sequence number (if available)
+    seq_num = metadata.get("sequence_number")
+    if seq_num and seq_num != "Unknown":
+        metadata["file_name"] = make_timebot_filename(seq_num, "txt")
+    else:
+        # fallback: use original filename with prefix
+        base_name = os.path.basename(file_path)
+        metadata["file_name"] = ensure_timebot_prefix(base_name)
 
     # Compute the hash for the original document
     hash_value = compute_hash(content, metadata)
@@ -270,7 +280,13 @@ def process_single_file(
         
         # Move file to processed directory
         with file_lock:
-            destination = processed_path / txt_file.name
+            # Use the normalized filename for processed file
+            seq_num = metadata.get("sequence_number")
+            if seq_num and seq_num != "Unknown":
+                new_filename = make_timebot_filename(seq_num, "txt")
+            else:
+                new_filename = ensure_timebot_prefix(txt_file.name)
+            destination = processed_path / new_filename
             txt_file.rename(destination)
 
         # Print only if verbose is enabled

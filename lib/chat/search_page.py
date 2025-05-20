@@ -506,6 +506,8 @@ def display_search_results(results_per_page):
 
         meta_parts = []
         url = metadata.get("url", "#") # Get URL from metadata
+        doc_filename = metadata.get("file_name")
+        from shared.utils import make_prefixed_document_url
 
         # --- Display Type ---
         type_display = doc_type_raw.capitalize()
@@ -546,7 +548,12 @@ def display_search_results(results_per_page):
                          meta_parts.append(f"**Position**: ~{position_text}")
                  except (ValueError, TypeError, ZeroDivisionError): pass # Ignore calculation errors
 
-            if url != "#" and url != "Unknown": meta_parts.append(f"**Source**: [Link]({url})")
+            # Always use normalized/prefixed filename for document/technical links
+            if doc_filename:
+                normalized_url = make_prefixed_document_url(doc_filename, "/download/pdf/")
+                meta_parts.append(f"**Source**: [Link]({normalized_url})")
+            elif url != "#" and url != "Unknown":
+                meta_parts.append(f"**Source**: [Link]({url})")
 
         elif doc_type == "web":
             domain = metadata.get("domain", "")

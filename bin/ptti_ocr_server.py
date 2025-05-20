@@ -19,6 +19,7 @@ sys.path.append("/usr/local/lib/timebot/lib")
 
 # Import the config module
 from shared.config import config
+from shared.utils import ensure_timebot_prefix, make_timebot_filename
 
 # FastAPI imports
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Request, Depends, BackgroundTasks
@@ -192,7 +193,21 @@ def move_to_processed_directory(file_path, top_dir):
     rel_path = os.path.relpath(file_path, top_dir)
 
     # Create the destination path
-    destination_path = os.path.join(processed_dir, rel_path)
+    # Use the sequence number if available to rename the file
+    seq_num = None
+    try:
+        # Try to extract sequence number from the filename or metadata if available
+        base = os.path.basename(file_path)
+        if base.startswith("timebot-"):
+            seq_num = base.split('-')[1].split('.')[0]
+    except Exception:
+        pass
+
+    if seq_num:
+        new_filename = make_timebot_filename(seq_num, "pdf")
+        destination_path = os.path.join(processed_dir, new_filename)
+    else:
+        destination_path = os.path.join(processed_dir, ensure_timebot_prefix(os.path.basename(file_path)))
 
     # Ensure the destination directory exists
     os.makedirs(os.path.dirname(destination_path), exist_ok=True)

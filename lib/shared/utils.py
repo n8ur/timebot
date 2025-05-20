@@ -5,6 +5,33 @@ from typing import List, Dict, Any, Tuple
 import re
 import copy
 
+# Configurable file prefix for document filenames
+FILE_PREFIX = "timebot-"
+
+def ensure_timebot_prefix(filename: str) -> str:
+    """
+    Ensure the filename starts with the configured FILE_PREFIX.
+    If it already does, return as-is. Otherwise, prepend FILE_PREFIX.
+    """
+    if filename.startswith(FILE_PREFIX):
+        return filename
+    return f"{FILE_PREFIX}{filename}"
+
+def strip_timebot_prefix(filename: str) -> str:
+    """
+    Remove FILE_PREFIX from filename if present.
+    """
+    if filename.startswith(FILE_PREFIX):
+        return filename[len(FILE_PREFIX) :]
+    return filename
+
+def make_timebot_filename(seq_num: int, ext: str) -> str:
+    """
+    Generate a filename in the format '<FILE_PREFIX><seq_num>.<ext>'
+    """
+    return f"{FILE_PREFIX}{seq_num}.{ext.lstrip('.')}"
+
+
 def compute_hash(content, metadata):
     """
     Generate a SHA256 hash for a given content string and metadata.

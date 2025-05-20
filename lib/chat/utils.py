@@ -192,6 +192,14 @@ def format_references(rag_results: List[Dict[str, Any]]) -> str:
 
                 reference = f'[{i}] Document: "{title}"; {attribution}{position_string}'
 
+                # --- Add correct download URL for document references ---
+                from shared.utils import make_prefixed_document_url
+                doc_filename = metadata.get("file_name")
+                if doc_filename:
+                    # Assume download endpoint is /download/pdf/<filename>
+                    doc_url = make_prefixed_document_url(doc_filename, "/download/pdf/")
+                    reference += f" [Link]({doc_url})"
+
             elif doc_type == "web":
                 title = metadata.get("title", "Untitled Web Page")
                 domain = metadata.get("domain", "")
