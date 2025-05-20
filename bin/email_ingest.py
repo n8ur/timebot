@@ -6,7 +6,7 @@ import argparse
 import hashlib
 import torch
 from pathlib import Path
-from dotenv import load_dotenv
+
 import shutil
 import time
 import atexit

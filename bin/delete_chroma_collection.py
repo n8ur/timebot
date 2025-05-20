@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import os
 import sys
 import argparse
 import chromadb
@@ -50,7 +49,7 @@ def delete_collection(db_path: str, collection_name: str, force: bool = False) -
         # Get collection info for verification
         try:
             # We need to get the collection to check its count
-            # We don't need an embedding function for this operation
+
             collection = client.get_collection(name=collection_name)
             doc_count = collection.count()
         except Exception as e:

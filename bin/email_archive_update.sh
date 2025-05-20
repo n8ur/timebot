@@ -21,7 +21,7 @@ else
 fi
 
 # --- Step 2: Convert ---
-# Only proceed if the first one succeeded (due to set -e and the exit 1 above)
+# Step 2 only runs if Step 1 succeeded
 echo "Running pipermail2text.py..." >> $LOG_FILE
 # Run the second program, redirecting stdout and stderr to the log file
 /usr/local/bin/pipermail2text.py >> $LOG_FILE 2>&1

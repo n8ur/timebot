@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import os
 import sys
 import random
 import argparse
@@ -44,7 +43,7 @@ def pretty_print_metadata(metadata: Dict[str, Any], indent: int = 0) -> None:
 def get_collection_stats(db_path: str, collection_name: str, embedding_model_name: str) -> Dict[str, Any]:
     """Get statistics for a specific collection."""
     try:
-        # Open the collection using your existing function
+        # Open the collection
         context = open_existing_collection(collection_name, db_path, embedding_model_name)
         collection = context.collection
 
@@ -101,7 +100,7 @@ def get_collection_stats(db_path: str, collection_name: str, embedding_model_nam
 def get_random_record(db_path: str, collection_name: str, embedding_model_name: str) -> Optional[Dict[str, Any]]:
     """Get a random record from the collection."""
     try:
-        # Open the collection using your existing function
+        # Open the collection
         context = open_existing_collection(collection_name, db_path, embedding_model_name)
         collection = context.collection
 
@@ -145,10 +144,10 @@ def main():
     args = parser.parse_args()
 
     try:
-        # Initialize ChromaDB client using your existing functions
+        # Initialize ChromaDB client
         client = chromadb.PersistentClient(path=args.db_path)
 
-        # Get collection names (using the correct method for ChromaDB v0.6.0+)
+        # Get collection names
         collection_names = client.list_collections()
 
         if args.collection:

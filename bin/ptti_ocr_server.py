@@ -1024,7 +1024,6 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    import os
 
     # Check and recover critical files if needed
     recovery_needed, recovery_success = log_manager.recover_from_backup()

@@ -483,7 +483,6 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    import os
 
     # Start the cleanup thread
     cleanup_thread = threading.Thread(target=cleanup_temp_files, daemon=True)

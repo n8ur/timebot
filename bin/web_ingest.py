@@ -9,7 +9,6 @@ import yaml
 import datetime
 import re
 from pathlib import Path
-from dotenv import load_dotenv
 import shutil
 import time
 import atexit

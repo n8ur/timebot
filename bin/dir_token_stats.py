@@ -6,7 +6,7 @@ import numpy as np
 import argparse
 from tqdm import tqdm
 import pandas as pd
-from pathlib import Path
+
 
 def count_tokens(file_path, encoding_name="cl100k_base"):
     """Count tokens in a file using the specified encoding."""
