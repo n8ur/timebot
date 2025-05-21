@@ -164,16 +164,16 @@ async def handle_api_query(request_data: QueryRequest, config: Dict[str, Any] = 
         )
 
         # Add weights information if weighting was applied
-        if config_copy.get("USE_WEIGHTING", False) and hasattr(response, 'weights'):
+        if config_copy["USE_WEIGHTING"] and hasattr(response, 'weights'):
             response.weights = WeightConfig(
-                document_collection_weight=config_copy.get("DOCUMENT_COLLECTION_WEIGHT"),
-                email_collection_weight=config_copy.get("EMAIL_COLLECTION_WEIGHT"),
-                web_collection_weight=config_copy.get("WEB_COLLECTION_WEIGHT"),
-                recency_weight=config_copy.get("RECENCY_WEIGHT"),
-                recency_decay_days=config_copy.get("RECENCY_DECAY_DAYS"),
-                chromadb_weight=config_copy.get("CHROMADB_WEIGHT"),
-                whoosh_weight=config_copy.get("WHOOSH_WEIGHT"),
-                reranker_weight=config_copy.get("RERANKER_WEIGHT")
+                document_collection_weight=config_copy["DOCUMENT_COLLECTION_WEIGHT"],
+                email_collection_weight=config_copy["EMAIL_COLLECTION_WEIGHT"],
+                web_collection_weight=config_copy["WEB_COLLECTION_WEIGHT"],
+                recency_weight=config_copy["RECENCY_WEIGHT"],
+                recency_decay_days=config_copy["RECENCY_DECAY_DAYS"],
+                chromadb_weight=config_copy["CHROMADB_WEIGHT"],
+                whoosh_weight=config_copy["WHOOSH_WEIGHT"],
+                reranker_weight=config_copy["RERANKER_WEIGHT"]
             )
 
         return response

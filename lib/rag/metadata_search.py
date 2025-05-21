@@ -46,9 +46,9 @@ def search_by_whoosh_metadata(
         return []
 
     # Get index paths from config
-    email_index_dir = config.get("WHOOSHDB_EMAIL_PATH")
-    document_index_dir = config.get("WHOOSHDB_DOC_PATH")
-    web_index_dir = config.get("WHOOSHDB_WEB_PATH")
+    email_index_dir = config["WHOOSHDB_EMAIL_PATH"]
+    document_index_dir = config["WHOOSHDB_DOC_PATH"]
+    web_index_dir = config["WHOOSHDB_WEB_PATH"]
 
     # Check index paths availability based on filter
     can_search_emails = collection_filter in ["all", "emails"] and email_index_dir
