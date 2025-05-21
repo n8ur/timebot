@@ -439,7 +439,7 @@ Processing Date: {processing_date}
         remote_pdf_dir = config['TIMEBOT_PDF_DIR'].rstrip('/')
 
         # Get configurable timeout (default to 10 seconds if not specified)
-        connect_timeout = config.get('OCR_UPLOAD_TIMEOUT', 10)
+        connect_timeout = config['OCR_UPLOAD_TIMEOUT']
 
         # Construct local file paths
         local_pdf_path = os.path.join(pdf_dir, f"{sequence_number}.pdf")
@@ -470,7 +470,7 @@ Processing Date: {processing_date}
         ]
     
         # Add identity file if specified
-        if config.get('OCR_UPLOAD_KEY'):
+        if 'OCR_UPLOAD_KEY' in config:
             scp_options.extend(["-i", config['OCR_UPLOAD_KEY']])
             ssh_options.extend(["-i", config['OCR_UPLOAD_KEY']])
     

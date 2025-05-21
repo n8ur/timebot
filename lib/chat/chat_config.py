@@ -19,10 +19,10 @@ OLLAMA_MODEL = config["OLLAMA_MODEL"]
 
 # External LLM configuration
 USE_EXTERNAL_LLM = config["USE_EXTERNAL_LLM"]
-if isinstance(config.get("USE_EXTERNAL_LLM"), str):
-    USE_EXTERNAL_LLM = config.get("USE_EXTERNAL_LLM").lower() == "true"
+if isinstance(USE_EXTERNAL_LLM, str):
+    USE_EXTERNAL_LLM = USE_EXTERNAL_LLM.lower() == "true"
 else:
-    USE_EXTERNAL_LLM = bool(config.get("USE_EXTERNAL_LLM", False))
+    USE_EXTERNAL_LLM = bool(USE_EXTERNAL_LLM)
 
 EXTERNAL_LLM_API_URL = config["EXTERNAL_LLM_API_URL"]
 EXTERNAL_LLM_API_KEY = config["EXTERNAL_LLM_API_KEY"]
@@ -49,21 +49,21 @@ EXTERNAL_LLM_API_RETRY_DELAY = config[
 
 
 # Rate limiting configuration - these are new
-FREE_DAILY_LIMIT = int(config.get("FREE_DAILY_LIMIT", 5))
-FREE_MONTHLY_LIMIT = int(config.get("FREE_MONTHLY_LIMIT", 50))
-PREMIUM_DAILY_LIMIT = int(config.get("PREMIUM_DAILY_LIMIT", 50))
-PREMIUM_MONTHLY_LIMIT = int(config.get("PREMIUM_MONTHLY_LIMIT", 500))
-ADMIN_DAILY_LIMIT = int(config.get("ADMIN_DAILY_LIMIT", 1000))
-ADMIN_MONTHLY_LIMIT = int(config.get("ADMIN_MONTHLY_LIMIT", 10000))
+FREE_DAILY_LIMIT = int(config["FREE_DAILY_LIMIT"])
+FREE_MONTHLY_LIMIT = int(config["FREE_MONTHLY_LIMIT"])
+PREMIUM_DAILY_LIMIT = int(config["PREMIUM_DAILY_LIMIT"])
+PREMIUM_MONTHLY_LIMIT = int(config["PREMIUM_MONTHLY_LIMIT"])
+ADMIN_DAILY_LIMIT = int(config["ADMIN_DAILY_LIMIT"])
+ADMIN_MONTHLY_LIMIT = int(config["ADMIN_MONTHLY_LIMIT"])
 
 # Fallback configuration - these are new
-USE_FALLBACK_ON_LIMIT = config.get("USE_FALLBACK_ON_LIMIT", True)
+USE_FALLBACK_ON_LIMIT = config["USE_FALLBACK_ON_LIMIT"]
 if isinstance(USE_FALLBACK_ON_LIMIT, str):
     USE_FALLBACK_ON_LIMIT = USE_FALLBACK_ON_LIMIT.lower() == "true"
 else:
     USE_FALLBACK_ON_LIMIT = bool(USE_FALLBACK_ON_LIMIT)
 
-FALLBACK_MODEL = config.get("FALLBACK_MODEL", OLLAMA_MODEL)
+FALLBACK_MODEL = config["FALLBACK_MODEL"]
 
 # Firebase email config
 FIREBASE_ADMIN_EMAIL = config["FIREBASE_ADMIN_EMAIL"]

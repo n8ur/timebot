@@ -39,11 +39,11 @@ def initialize_collections(config):
     if not config: logger.error("Config missing for initialize_collections."); return False
     try:
         db_path = config["CHROMADB_PATH"]
-        embedding_model = config.get("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+        embedding_model = config["EMBEDDING_MODEL"]
         collections_to_init = {
-            "email": config.get("CHROMADB_EMAIL_COLLECTION"),
-            "document": config.get("CHROMADB_DOC_COLLECTION"),
-            "web": config.get("CHROMADB_WEB_COLLECTION")
+            "email": config["CHROMADB_EMAIL_COLLECTION"],
+            "document": config["CHROMADB_DOC_COLLECTION"],
+            "web": config["CHROMADB_WEB_COLLECTION"]
         }
         opened_count = 0
         for col_type, collection_name in collections_to_init.items():
@@ -277,12 +277,12 @@ def perform_search_logic(
     """
     # Get default values from config if not provided
     if config:
-        fuzzy = fuzzy if fuzzy is not None else config.get("DEFAULT_FUZZY_SEARCH", True)
-        similarity_threshold = similarity_threshold if similarity_threshold is not None else config.get("DEFAULT_SIMILARITY_THRESHOLD", 0.5)
-        use_reranking_cfg = config.get("USE_RERANKING", True) and RERANKING_ENABLED
+        fuzzy = fuzzy if fuzzy is not None else config["DEFAULT_FUZZY_SEARCH"]
+        similarity_threshold = similarity_threshold if similarity_threshold is not None else config["DEFAULT_SIMILARITY_THRESHOLD"]
+        use_reranking_cfg = config["USE_RERANKING"] and RERANKING_ENABLED
         use_reranking = use_reranking if use_reranking is not None else use_reranking_cfg
         if use_reranking and not use_reranking_cfg: use_reranking = False # Respect config override
-        use_weighting_cfg = config.get("USE_WEIGHTING", False) and WEIGHTING_ENABLED
+        use_weighting_cfg = config["USE_WEIGHTING"] and WEIGHTING_ENABLED
         if mode == "chroma" or mode == "combined": initialize_collections(config)
     else:
         fuzzy = fuzzy if fuzzy is not None else True
@@ -352,7 +352,7 @@ def perform_search_logic(
     if use_reranking and is_content_search and len(results) > 1:
         logger.info(f"Attempting reranking for {len(results)} results.")
         try:
-            reranker_model = config.get("RERANKER_MODEL") if config else None
+            reranker_model = config["RERANKER_MODEL"] if config else None
             if reranker_model:
                  results = rerank_results(query, results, reranker_model)
                  logger.info("Reranking applied successfully."); reranking_applied = True

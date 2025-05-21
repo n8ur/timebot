@@ -31,17 +31,17 @@ logger = logging.getLogger(__name__)
 class AuthService:
     def __init__(self, config):
         self.config = config
-        self.use_auth = config.get("USE_FIREBASE_AUTH", False)
+        self.use_auth = config["USE_FIREBASE_AUTH"]
 
         if self.use_auth:
             self.firebase_config = {
-                "apiKey": config.get("FIREBASE_API_KEY"),
-                "authDomain": config.get("FIREBASE_AUTH_DOMAIN"),
-                "databaseURL": config.get("FIREBASE_DATABASE_URL"),
-                "projectId": config.get("FIREBASE_PROJECT_ID"),
-                "storageBucket": config.get("FIREBASE_STORAGE_BUCKET"),
-                "messagingSenderId": config.get("FIREBASE_MESSAGING_SENDER_ID"),
-                "appId": config.get("FIREBASE_APP_ID"),
+                "apiKey": config["FIREBASE_API_KEY"],
+                "authDomain": config["FIREBASE_AUTH_DOMAIN"],
+                "databaseURL": config["FIREBASE_DATABASE_URL"],
+                "projectId": config["FIREBASE_PROJECT_ID"],
+                "storageBucket": config["FIREBASE_STORAGE_BUCKET"],
+                "messagingSenderId": config["FIREBASE_MESSAGING_SENDER_ID"],
+                "appId": config["FIREBASE_APP_ID"],
             }
 
             self.firebase = pyrebase.initialize_app(self.firebase_config)
@@ -50,7 +50,7 @@ class AuthService:
             # Initialize Firebase Admin SDK for Firestore
             if not firebase_admin._apps:
                 cred = credentials.Certificate(
-                    config.get("FIREBASE_SERVICE_ACCOUNT_KEY")
+                    config["FIREBASE_SERVICE_ACCOUNT_KEY"]
                 )
                 firebase_admin.initialize_app(cred)
 
@@ -610,8 +610,8 @@ class AuthService:
             return
 
         try:
-            admin_email = self.config.get("FIREBASE_ADMIN_EMAIL")
-            sender = self.config.get("FIREBASE_EMAIL_SENDER")
+            admin_email = self.config["FIREBASE_ADMIN_EMAIL"]
+            sender = self.config["FIREBASE_EMAIL_SENDER"]
 
             # Include full name in the email body
             email_body = (
@@ -627,7 +627,7 @@ class AuthService:
 
             # Configure SMTP server details from config
             smtp_server = smtplib.SMTP(
-                self.config.get("SMTP_SERVER"), self.config.get("SMTP_PORT", 587)
+                self.config["SMTP_SERVER"], self.config["SMTP_PORT"]
             )
             smtp_server.starttls()
             # smtp_server.login(

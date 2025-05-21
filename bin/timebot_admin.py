@@ -20,6 +20,27 @@ sys.path.append("/usr/local/lib/timebot/lib")
 # Import the config module
 from shared.config import config
 
+# ---- Top-level error handler for missing config keys ----
+def missing_config_exit(key):
+    st.error(f"Missing required configuration: {key}")
+    st.stop()
+
+class StrictConfig:
+    def __init__(self, config):
+        self._config = config
+    def __getitem__(self, key):
+        try:
+            return self._config[key]
+        except KeyError:
+            missing_config_exit(key)
+    def get(self, key):
+        try:
+            return self._config[key]
+        except KeyError:
+            missing_config_exit(key)
+
+config = StrictConfig(config)
+
 # Page config
 st.set_page_config(
     page_title="User Approval Dashboard",
@@ -42,11 +63,11 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 # Email configuration
-FIREBASE_ADMIN_EMAIL = config.get("FIREBASE_ADMIN_EMAIL", "jra@febo.com")
-FIREBASE_EMAIL_SENDER = config.get("FIREBASE_EMAIL_SENDER", "jra@febo.com")
-SMTP_SERVER = config.get("SMTP_SERVER", "mail-relay.febo.com")
-SMTP_PORT = config.get("SMTP_PORT", "587")
-SMTP_USERNAME = config.get("SMTP_USERNAME", "jra")
+FIREBASE_ADMIN_EMAIL = config["FIREBASE_ADMIN_EMAIL"]
+FIREBASE_EMAIL_SENDER = config["FIREBASE_EMAIL_SENDER"]
+SMTP_SERVER = config["SMTP_SERVER"]
+SMTP_PORT = config["SMTP_PORT"]
+SMTP_USERNAME = config["SMTP_USERNAME"]
 
 # Function to send email notifications
 def send_email_notification(recipient_email, subject, message_html):

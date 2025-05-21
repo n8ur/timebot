@@ -7,12 +7,6 @@
 # Location of python functions and support files
 SERVER_DIR="/usr/local/lib/timebot"
 
-# API and other keys
-GOOGLE_APPLICATION_CREDENTIALS="/etc/timebot/time-nuts-ocr-a239b60893f1.json"  # Required for Google Vision OCR
-OCR_SECRET_KEY="e1e9281fab5d222c2d94b176ed349b33017d9d5dd81da16974d8a3eaa5209a82"
-OCR_UPLOAD_KEY="/etc/timebot/ocr-upload-key"
-OCR_UPLOAD_USER="ocr-upload"
-
 # Firebase vars set at bottom of file
 USE_FIREBASE_AUTH=True
 
@@ -65,10 +59,8 @@ RERANKER_MODEL="BAAI/bge-reranker-large"
 
 # For external LLM (Gemini, OpenAI, etc.)
 USE_EXTERNAL_LLM=True
-EXTERNAL_LLM_API_URL="https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent"
-EXTERNAL_LLM_API_KEY="AIzaSyBoymqJ_Jfh7YL30Yw3b17mHUX2nTrDOKA" # gemini
 EXTERNAL_LLM_MODEL="gemini-2.0-flash"
-MAX_OUTPUT_TOKENS=4096
+MAX_OUTPUT_TOKENS=8192
 ENABLE_OLLAMA_FALLBACK=False
 EXTERNAL_LLM_API_MAX_RETRIES=3
 EXTERNAL_LLM_API_RETRY_DELAY=2
@@ -101,7 +93,6 @@ TIMEBOT_TEXT_DIR="/var/www/febo.com/timebot_docs/text"
 
 # Server URLs and ports
 
-ADMIN_DASHBOARD_PASSWORD="9192MHz"
 ADMIN_DASHBOARD_LISTEN_ADDRESS="0.0.0.0"
 ADMIN_DASHBOARD_PORT="8800"
 
@@ -136,14 +127,10 @@ EMBEDDING_SERVICE_LOG="/var/log/timebot/embedding-service.log"
 TIMEBOT_LOG="/var/log/timebot/timebot.log"
 
 # Firebase Authentication Config (only needed if USE_FIREBASE_AUTH is True)
-FIREBASE_API_KEY="AIzaSyAwAte7Bg7SgFnnCAv9rsX4YE2XjyHn2gA"
 FIREBASE_AUTH_DOMAIN="timebot-auth.firebaseapp.com"
 FIREBASE_DATABASE_URL="https=//timebot-auth.firebaseio.com"
 FIREBASE_PROJECT_ID="timebot-auth"
 FIREBASE_STORAGE_BUCKET="timebot-auth.appspot.com"
-FIREBASE_MESSAGING_SENDER_ID="992483667649"
-FIREBASE_APP_ID="1:992483667649:web:c364ebdf60aaa20a6e6e40"
-FIREBASE_SERVICE_ACCOUNT_KEY="/etc/timebot/timebot-auth-firebase-adminsdk-fbsvc-b9df932eca.json"
 
 # Firebase user API limits
 FREE_DAILY_LIMIT=30
@@ -152,10 +139,3 @@ PREMIUM_DAILY_LIMIT=50
 PREMIUM_MONTHLY_LIMIT=500
 ADMIN_DAILY_LIMIT=100000
 ADMIN_MONTHLY_LIMIT=100000
-
-
-FIREBASE_ADMIN_EMAIL="jra@febo.com"
-FIREBASE_EMAIL_SENDER="jra@febo.com"
-SMTP_SERVER="mail-relay.febo.com"
-SMTP_PORT="587"
-SMTP_USERNAME="jra"
