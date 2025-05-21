@@ -1,4 +1,7 @@
 #!/bin/env python3
+# /usr/local/lib/timebot/bin/dir_token_stats.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 import os
 import tiktoken

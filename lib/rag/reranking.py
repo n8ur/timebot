@@ -1,4 +1,6 @@
 # /usr/local/lib/timebot/lib/rag/reranking.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 """Reranking module for search results."""
 

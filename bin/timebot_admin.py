@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/bin/timebot_admin.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore, auth

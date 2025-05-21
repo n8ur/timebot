@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/lib/chat/chat_config.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 # chat_config.py - Configuration settings for the Timebot chat application
 
 import os

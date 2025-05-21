@@ -1,4 +1,6 @@
 # /usr/local/lib/timebot/lib/rag/api_routes.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 """
 API routes for search functionality.

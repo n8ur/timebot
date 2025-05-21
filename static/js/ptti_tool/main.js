@@ -1,3 +1,12 @@
+/* /usr/local/lib/timebot/static/js/ptti_tool/main.js */
+/* Copyright 2025 John Ackermann
+   Licensed under the MIT License. See LICENSE.TXT for details. */
+
+/*
+Copyright 2025 John Ackermann
+Licensed under the MIT License. See LICENSE.TXT for details.
+*/
+
 document.addEventListener('DOMContentLoaded', function() {
   // Auto-refresh queue page every 10 seconds if there are processing documents
   if (document.querySelector('.queue-table') && 

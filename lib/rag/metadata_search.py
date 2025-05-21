@@ -1,4 +1,6 @@
 # /usr/local/lib/timebot/lib/rag/metadata_search.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 """
 Metadata search functionality for the RAG application.

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# /usr/local/lib/timebot/lib/tools/whoosh_doc_schema.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 import os
 import sys

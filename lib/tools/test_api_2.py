@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# /usr/local/lib/timebot/lib/tools/test_api_2.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 # test_api_doc_types.py - Test RAG API for doc_type consistency
 

@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /usr/local/lib/timebot/bin/web2rag.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 # -*- coding: utf-8 -*-
 
 import os

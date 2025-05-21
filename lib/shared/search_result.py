@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/lib/shared/search_result.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 # search_result.py
 from datetime import datetime
 from typing import Dict, Any, Optional, List, Union

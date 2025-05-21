@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/lib/chat/info_page.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 # info_page.py - Information page for the Timebot application
 
 import streamlit as st

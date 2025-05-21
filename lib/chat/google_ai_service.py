@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/lib/chat/google_ai_service.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 # google_ai_service.py
 import requests
 import json

@@ -1,4 +1,8 @@
 # /usr/local/lib/timebot/lib/chat/rag_enhancement.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
+# /usr/local/lib/timebot/lib/chat/rag_enhancement.py
 
 import logging
 from typing import Optional, List, Dict, Any, Callable

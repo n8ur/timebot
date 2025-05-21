@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/lib/ocr/ocr_processor.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 #!/bin/env python3
 
 import os

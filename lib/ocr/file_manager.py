@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/lib/ocr/file_manager.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 import os
 import uuid
 import tempfile

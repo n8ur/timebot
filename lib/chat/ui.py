@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/lib/chat/ui.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 # ui.py - UI components for the Timebot chat application
 
 import streamlit as st

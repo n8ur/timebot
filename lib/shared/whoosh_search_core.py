@@ -1,4 +1,6 @@
 # /usr/local/lib/timebot/lib/shared/whoosh_search_core.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 from typing import Dict, Any, List, Optional, Union, Tuple
 from whoosh.index import open_dir, Index

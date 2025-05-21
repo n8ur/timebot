@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/lib/chat/utils.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 # utils.py - Utility functions for the Timebot chat application
 
 import datetime

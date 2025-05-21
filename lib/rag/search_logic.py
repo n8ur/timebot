@@ -1,4 +1,7 @@
 # /usr/local/lib/timebot/lib/rag/search_logic.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 """
 Core search logic for the RAG application. (Minimally modified for comma-separated filters)
 """

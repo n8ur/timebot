@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /usr/local/lib/timebot/bin/update_from_archive.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 """
 RAG Processor - Downloads new HTML files from an archive URL that aren't already
 processed locally.

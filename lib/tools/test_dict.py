@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-# /usr/local/lib/timebot/lib/rag/debug_search_result.py
+# /usr/local/lib/timebot/lib/tools/test_dict.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 """
 Diagnostic tool to check the SearchResult.to_dict() method.

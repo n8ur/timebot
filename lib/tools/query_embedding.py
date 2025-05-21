@@ -1,4 +1,7 @@
 #!/bin/env python3
+# /usr/local/lib/timebot/lib/tools/query_embedding.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 import requests
 import json

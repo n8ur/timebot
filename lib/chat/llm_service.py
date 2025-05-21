@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/lib/chat/llm_service.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 # llm_service.py
 import requests
 import json

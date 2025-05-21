@@ -1,4 +1,8 @@
 # /usr/local/lib/timebot/lib/shared/whoosh_search_helpers.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
+# whoosh_search_helpers.py
 
 from typing import Dict, Any, List, Optional, Union, Tuple
 import logging

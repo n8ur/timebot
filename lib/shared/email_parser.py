@@ -1,4 +1,10 @@
 #!/bin/env python3
+# /usr/local/lib/timebot/lib/shared/email_parser.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 from typing import Dict, Any, Tuple
 

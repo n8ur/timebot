@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/bin/make_timebot_symlinks.sh
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 SOURCE_DIR="/usr/local/lib/timebot/bin"
 TARGET_DIR="/usr/local/bin"
 

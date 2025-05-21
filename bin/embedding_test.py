@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /usr/local/lib/timebot/bin/embedding_test.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 import requests
 import json
 import sys

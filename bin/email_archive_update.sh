@@ -1,4 +1,8 @@
 #!/bin/bash
+# /usr/local/lib/timebot/bin/email_archive_update.sh
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 set -e  # Exit immediately if any command fails
 
 LOG_FILE="/var/log/timebot/archive-process.log"

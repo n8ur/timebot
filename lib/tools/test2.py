@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /usr/local/lib/timebot/lib/tools/test2.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 import os
 import sys
 from whoosh.index import open_dir

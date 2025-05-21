@@ -1,4 +1,6 @@
-# /usr/local/lib/timebot/lib/shared/whoosh_utils.py (Updated)
+# /usr/local/lib/timebot/lib/shared/whoosh_utils.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 import os
 from typing import Dict, Any, Optional, List

@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/lib/chat/search_page.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 # search_page.py (Modified from Original)
 import streamlit as st
 from typing import List, Dict, Any, Optional

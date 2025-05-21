@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/lib/shared/file_utils.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 # file_utils.py
 
 import os

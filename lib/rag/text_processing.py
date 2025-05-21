@@ -1,4 +1,6 @@
 # /usr/local/lib/timebot/lib/rag/text_processing.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 """
 Text processing utilities for the RAG application.

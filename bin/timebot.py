@@ -1,4 +1,7 @@
 #!/bin/env python3
+# /usr/local/lib/timebot/bin/timebot.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 # timebot_chat.py - Main entry point for the Timebot chat application
 

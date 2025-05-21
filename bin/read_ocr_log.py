@@ -1,4 +1,7 @@
 #!/bin/env python3
+# /usr/local/lib/timebot/bin/read_ocr_log.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
 
 import json
 import argparse

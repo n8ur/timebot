@@ -1,3 +1,7 @@
+# /usr/local/lib/timebot/lib/shared/chromadb_core.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
 # chromadb_core.py
 
 import sys

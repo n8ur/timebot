@@ -1,3 +1,12 @@
+/* /usr/local/lib/timebot/static/js/ocr/main.js */
+/* Copyright 2025 John Ackermann
+   Licensed under the MIT License. See LICENSE.TXT for details. */
+
+/*
+Copyright 2025 John Ackermann
+Licensed under the MIT License. See LICENSE.TXT for details.
+*/
+
 document.addEventListener('DOMContentLoaded', function() {
   // Form validation
   const form = document.querySelector('form');

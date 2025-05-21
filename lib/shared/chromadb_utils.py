@@ -1,3 +1,9 @@
+# /usr/local/lib/timebot/lib/shared/chromadb_utils.py
+# Copyright 2025 John Ackermann
+# Licensed under the MIT License. See LICENSE.TXT for details.
+
+# chromadb_utils.py
+
 # Import everything from the split modules to maintain backward compatibility
 from .chromadb_core import db_manager, close_collection
 from .chromadb_collections import (
