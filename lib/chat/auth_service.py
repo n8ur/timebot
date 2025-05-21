@@ -16,14 +16,7 @@ import logging
 from firebase_admin import credentials, firestore
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
-from chat.chat_config import (
-    FREE_DAILY_LIMIT,
-    FREE_MONTHLY_LIMIT,
-    PREMIUM_DAILY_LIMIT,
-    PREMIUM_MONTHLY_LIMIT,
-    ADMIN_DAILY_LIMIT,
-    ADMIN_MONTHLY_LIMIT,
-)
+from shared.config import config
 
 logger = logging.getLogger(__name__)
 

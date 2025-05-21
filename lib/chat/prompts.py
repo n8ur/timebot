@@ -1,88 +1,6 @@
-# chat_config.py has been deprecated. Use shared.config for all configuration access.
-# Copyright 2025 John Ackermann
-# Licensed under the MIT License. See LICENSE.TXT for details.
+# /usr/local/lib/timebot/lib/chat/prompts.py
+# Prompt templates for the Timebot chat application
 
-# chat_config.py - Configuration settings for the Timebot chat application
-
-import os
-import logging
-from shared.config import config
-
-logger = logging.getLogger(__name__)
-
-# Chat base URL
-TIMEBOT_CHAT_BASE_URL = config["TIMEBOT_CHAT_BASE_URL"]
-
-# Ollama configuration
-OLLAMA_API_URL = config["OLLAMA_API_URL"]
-OLLAMA_MODEL = config["OLLAMA_MODEL"]
-
-# External LLM configuration
-USE_EXTERNAL_LLM = config["USE_EXTERNAL_LLM"]
-if isinstance(USE_EXTERNAL_LLM, str):
-    USE_EXTERNAL_LLM = USE_EXTERNAL_LLM.lower() == "true"
-else:
-    USE_EXTERNAL_LLM = bool(USE_EXTERNAL_LLM)
-
-EXTERNAL_LLM_API_URL = config["EXTERNAL_LLM_API_URL"]
-EXTERNAL_LLM_API_KEY = config["EXTERNAL_LLM_API_KEY"]
-EXTERNAL_LLM_MODEL = config["EXTERNAL_LLM_MODEL"]
-MAX_OUTPUT_TOKENS = config["MAX_OUTPUT_TOKENS"]
-
-# For query enhancement capability
-ENABLE_QUERY_ENHANCEMENT = True
-MAX_ENHANCEMENT_HISTORY_TURNS = 3   # this is for chat context
-
-# RAG enhancement configuration
-ENABLE_LLM_QUERY_ENHANCEMENT = ENABLE_QUERY_ENHANCEMENT
-LLM_ENHANCEMENT_MODEL = "gemini-2.0-flash"
-
-ENABLE_OLLAMA_FALLBACK = config[
-    "ENABLE_OLLAMA_FALLBACK"
-]  # False to disable Ollama fallback
-EXTERNAL_LLM_API_MAX_RETRIES = config[
-    "EXTERNAL_LLM_API_MAX_RETRIES"
-]  # Maximum retries for external LLM API
-EXTERNAL_LLM_API_RETRY_DELAY = config[
-    "EXTERNAL_LLM_API_RETRY_DELAY"
-]  # Base delay for exponential backoff
-
-
-# Rate limiting configuration - these are new
-FREE_DAILY_LIMIT = int(config["FREE_DAILY_LIMIT"])
-FREE_MONTHLY_LIMIT = int(config["FREE_MONTHLY_LIMIT"])
-PREMIUM_DAILY_LIMIT = int(config["PREMIUM_DAILY_LIMIT"])
-PREMIUM_MONTHLY_LIMIT = int(config["PREMIUM_MONTHLY_LIMIT"])
-ADMIN_DAILY_LIMIT = int(config["ADMIN_DAILY_LIMIT"])
-ADMIN_MONTHLY_LIMIT = int(config["ADMIN_MONTHLY_LIMIT"])
-
-# Fallback configuration - these are new
-USE_FALLBACK_ON_LIMIT = config["USE_FALLBACK_ON_LIMIT"]
-if isinstance(USE_FALLBACK_ON_LIMIT, str):
-    USE_FALLBACK_ON_LIMIT = USE_FALLBACK_ON_LIMIT.lower() == "true"
-else:
-    USE_FALLBACK_ON_LIMIT = bool(USE_FALLBACK_ON_LIMIT)
-
-FALLBACK_MODEL = config["FALLBACK_MODEL"]
-
-# Firebase email config
-FIREBASE_ADMIN_EMAIL = config["FIREBASE_ADMIN_EMAIL"]
-FIREBASE_EMAIL_SENDER = config["FIREBASE_EMAIL_SENDER"]
-SMTP_SERVER = config["SMTP_SERVER"]
-SMTP_PORT = config["SMTP_PORT"]
-SMTP_USERNAME = config["SMTP_USERNAME"]
-
-
-# Embedding server configuration
-EMBEDDING_SERVER_URL = config["EMBEDDING_SERVER_URL"]
-EMBEDDING_SERVER_PORT = config["EMBEDDING_SERVER_PORT"]
-TOP_K = config["TOP_K"]
-SIMILARITY_THRESHOLD = config["SIMILARITY_THRESHOLD"]
-
-# Startup semaphore path
-STARTUP_SEMAPHORE = "/tmp/timebot_chat_started"
-
-# System prompt template with citation instructions
 SYSTEM_PROMPT = """
 Your identity is "timebot", an expert system specializing exclusively
 in time and frequency measurement. Your sole function is to provide
@@ -206,5 +124,3 @@ Instructions for rewriting:
 
 Rewritten Query:
 """
-
-

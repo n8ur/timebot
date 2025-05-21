@@ -12,17 +12,9 @@ import logging
 import re
 from typing import Dict, Any, List, Optional
 
-from chat.chat_config import (
-    EMBEDDING_SERVER_URL,
-    EMBEDDING_SERVER_PORT,
-    TOP_K,
-    SIMILARITY_THRESHOLD,
-    ENABLE_QUERY_ENHANCEMENT as DEFAULT_ENABLE_RULE_BASED_ENHANCEMENT,
-    MAX_ENHANCEMENT_HISTORY_TURNS,  # For existing rule-based enhancement
-    ENABLE_LLM_QUERY_ENHANCEMENT,
-    LLM_ENHANCEMENT_PROMPT_TEMPLATE,
-    LLM_ENHANCEMENT_MODEL,
-)
+from shared.config import config
+# Use config["EMBEDDING_SERVER_URL"], config["EMBEDDING_SERVER_PORT"], etc. directly below.
+from chat.prompts import SYSTEM_PROMPT, LLM_ENHANCEMENT_PROMPT_TEMPLATE
 
 import chat.rag_enhancement # For LLM-based query enhancement
 import chat.llm_service     # To pass llm_service.query_llm as a callable

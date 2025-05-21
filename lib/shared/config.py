@@ -34,14 +34,14 @@ _CONFIG.update(os.environ)
 # --- Normalize and convert config values in a single pass ---
 for key, value in list(_CONFIG.items()):
     if isinstance(value, str):
-        # Remove trailing slash (but not if value is just "/")
-        if value != '/' and value.endswith('/'):
-            value = value.rstrip('/')
-        # Remove surrounding quotes
-        if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
-            value = value[1:-1]
-        # Try to convert to int
         try:
+            # Remove trailing slash (but not if value is just "/")
+            if value != '/' and value.endswith('/'):
+                value = value.rstrip('/')
+            # Remove surrounding quotes
+            if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+                value = value[1:-1]
+            # Try to convert to int
             value = int(value)
         except ValueError:
             # Try to convert to bool
@@ -51,12 +51,7 @@ for key, value in list(_CONFIG.items()):
             elif lower_value in ("false", "no", "off"):
                 value = False
         _CONFIG[key] = value
-    except ValueError:
-        # Check if the value is quoted; if so, remove the quotes
-        if value.startswith('"') and value.endswith('"'):
-            _CONFIG[key] = value[1:-1]
-        elif value.startswith("'") and value.endswith("'"):
-            _CONFIG[key] = value[1:-1]
+
 
 
 # --- Create a Dictionary-Like Object (Read-Only Access) ---

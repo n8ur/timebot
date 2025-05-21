@@ -10,19 +10,8 @@ import streamlit as st
 import time
 import random
 from typing import Optional, List, Dict, Any
-from chat.chat_config import (
-    OLLAMA_API_URL,
-    OLLAMA_MODEL,
-    EXTERNAL_LLM_ENABLED,
-    EXTERNAL_LLM_API_URL,
-    EXTERNAL_LLM_API_KEY,
-    EXTERNAL_LLM_MODEL,
-    MAX_OUTPUT_TOKENS,
-    USE_EXTERNAL_LLM,
-    ENABLE_OLLAMA_FALLBACK,
-    EXTERNAL_LLM_API_MAX_RETRIES,
-    EXTERNAL_LLM_API_RETRY_DELAY,
-)
+from shared.config import config
+# Use config["OLLAMA_API_URL"], config["OLLAMA_MODEL"], etc. directly below.
 
 logger = logging.getLogger(__name__)
 

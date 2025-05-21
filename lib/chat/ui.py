@@ -8,12 +8,9 @@ import streamlit as st
 import datetime
 import logging
 from typing import Callable
-from chat.chat_config import (
-    SYSTEM_PROMPT, 
-    TOP_K, 
-    ENABLE_QUERY_ENHANCEMENT,
-    MAX_ENHANCEMENT_HISTORY_TURNS
-)
+from shared.config import config
+from chat.prompts import SYSTEM_PROMPT
+# Use config["TOP_K"], etc. directly below.
 from chat.rag_service import clear_rag_cache
 
 logger = logging.getLogger(__name__)
