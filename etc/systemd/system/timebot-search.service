@@ -1,0 +1,16 @@
+[Unit]
+Description=timebot-search
+After=network.target
+
+[Service]
+Type=simple
+Environment="HF_HOME=/var/cache/timebot/huggingface"
+Environment="CUDA_CACHE_PATH=/var/cache/nvidia"
+Environment="PYTHONPATH=/usr/local/bin:/usr/local/lib/timebot/lib"
+WorkingDirectory=/var/lib/timebot/
+ExecStart=/bin/bash -c 'ADDR=$(grep TIMEBOT_SEARCH_LISTEN_ADDR /etc/timebot/config | cut -d= -f2 | tr -d \'"\'); PORT=$(grep TIMEBOT_SEARCH_PORT /etc/timebot/config | cut -d= -f2 | tr -d \'"\'); echo "Using Address: $ADDR, Port: $PORT"; exec /usr/bin/python3 -m gunicorn --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind $ADDR:$PORT timebot_search:app'
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+

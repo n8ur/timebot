@@ -1,0 +1,16 @@
+[Unit]
+Description=Timebot User Approval Dashboard
+After=network.target
+
+[Service]
+Type=simple
+Environment="PYTHONPATH=/usr/local/bin:/usr/local/lib/timebot/lib"
+WorkingDirectory=/usr/local/bin
+ExecStart=/bin/bash -c 'ADDR=$(grep ADMIN_DASHBOARD_LISTEN_ADDRESS /etc/timebot/config | cut -d= -f2 | tr -d \'"\'); PORT=$(grep ADMIN_DASHBOARD_PORT /etc/timebot/config | cut -d= -f2 | tr -d \'"\'); PASS=$(grep ADMIN_DASHBOARD_PASSWORD /etc/timebot/config | cut -d= -f2 | tr -d \'"\'); echo "Using Address: $ADDR, Port: $PORT"; exec /usr/local/bin/streamlit run /usr/local/bin/timebot_admin.py --server.address $ADDR --server.port $PORT --server.headless true --server.enableCORS false --server.enableXsrfProtection false'
+Restart=on-failure
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+

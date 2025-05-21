@@ -2,59 +2,55 @@
 # Copyright 2025 John Ackermann
 # Licensed under the MIT License. See LICENSE.TXT for details.
 
-# config.py
+
 
 """Configuration settings for the application."""
 
 import os
-import argparse
 from dotenv import load_dotenv
 
-load_dotenv("/etc/timebot/config")
-load_dotenv("/etc/timebot/secrets")
+# --- Default Config Vars ---
+# These can be overridden by environment variables or dotenv files
+_CONFIG = {
+    "VERBOSE": False,
+    "DRY_RUN": False
+}
 
-"""
-We're not calling argparse because that messes up gunicorn
-parser = argparse.ArgumentParser(
-    description="Timebot Configuration Tool"
-)
+# --- Load dotenv files with warnings and override for secrets ---
+CONFIG_PATH = "/etc/timebot/config"
+SECRETS_PATH = "/etc/timebot/secrets"
 
-parser.add_argument(
-    "--verbose", action="store_true", help="Enable verbose output"
-)
-parser.add_argument(
-    "--dry-run",
-    action="store_true",
-    help="Perform a dry run without making changes",
-)
+if not os.path.exists(CONFIG_PATH):
+    print(f"Warning: Config file {CONFIG_PATH} not found.")
+load_dotenv(CONFIG_PATH)
 
-args = parser.parse_args()
-"""
+if not os.path.exists(SECRETS_PATH):
+    print(f"Warning: Secrets file {SECRETS_PATH} not found.")
+load_dotenv(SECRETS_PATH, override=True)
 
-# --- Load Configuration Values ---
-# (All values from environment variables, command-line
-# arguments take precedence)
+# Update _CONFIG with environment variables (dotenv will populate os.environ)
+_CONFIG.update(os.environ)
 
-# Get all environment variables
-_CONFIG = dict(os.environ)  # Use _CONFIG to avoid naming conflicts
-
-# Add command-line arguments to the configuration 
-# (overwriting environment variables)
-#_CONFIG["VERBOSE"] = args.verbose  # Boolean
-#_CONFIG["DRY_RUN"] = args.dry_run
-_CONFIG["VERBOSE"] = False
-_CONFIG["DRY_RUN"] = False
-
-# Remove any trailing slash froms vars for clean path creation
-for key, value in _CONFIG.items():
+# --- Normalize and convert config values in a single pass ---
+for key, value in list(_CONFIG.items()):
     if isinstance(value, str):
+        # Remove trailing slash (but not if value is just "/")
         if value != '/' and value.endswith('/'):
-            _CONFIG[key] = value.rstrip('/')
-
-# Convert String to Numeric Type (If Appropriate)
-for key, value in _CONFIG.items():
-    try:
-        _CONFIG[key] = int(value)
+            value = value.rstrip('/')
+        # Remove surrounding quotes
+        if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+            value = value[1:-1]
+        # Try to convert to int
+        try:
+            value = int(value)
+        except ValueError:
+            # Try to convert to bool
+            lower_value = value.lower()
+            if lower_value in ("true", "yes", "on"):
+                value = True
+            elif lower_value in ("false", "no", "off"):
+                value = False
+        _CONFIG[key] = value
     except ValueError:
         # Check if the value is quoted; if so, remove the quotes
         if value.startswith('"') and value.endswith('"'):
@@ -62,14 +58,6 @@ for key, value in _CONFIG.items():
         elif value.startswith("'") and value.endswith("'"):
             _CONFIG[key] = value[1:-1]
 
-        # Now see if it's a boolean
-        lower_value = value.lower()
-        if lower_value in ("true", "yes", "on"):
-            _CONFIG[key] = True
-            continue
-        elif lower_value in ("false", "no", "off"):
-            _CONFIG[key] = False
-            continue
 
 # --- Create a Dictionary-Like Object (Read-Only Access) ---
 class ConfigDict(object):

@@ -1,0 +1,17 @@
+[Unit]
+Description=document embedder service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment="HF_HOME=/var/cache/timebot/huggingface"
+Environment="CUDA_CACHE_PATH=/var/cache/nvidia"
+Environment="PYTHONPYCACHEPREFIX=/var/cache/timebot/embedding-service"
+WorkingDirectory=/var/lib/timebot/
+ExecStart=/usr/local/bin/embedding_service.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

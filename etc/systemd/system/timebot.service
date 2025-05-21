@@ -1,0 +1,27 @@
+[Unit]
+Description=Timebot Chat Service
+After=network.target
+
+[Service]
+Type=simple
+Environment="PYTHONPATH=/usr/local/bin:/usr/local/lib/timebot/lib"
+WorkingDirectory=/usr/local/bin
+ExecStart=/bin/bash -c ' \
+    ADDR=$(grep TIMEBOT_CHAT_LISTEN_ADDR /etc/timebot/config | cut -d= -f2 | tr -d \'"\'); \
+    PORT=$(grep TIMEBOT_CHAT_PORT /etc/timebot/config | cut -d= -f2 | tr -d \'"\'); \
+    echo "Using Address: $ADDR, Port: $PORT"; \
+    exec /usr/local/bin/streamlit run /usr/local/bin/timebot.py \
+        --server.address $ADDR \
+        --server.port $PORT \
+        --server.headless true \
+        --server.enableCORS false \
+        --server.enableXsrfProtection false \
+        --browser.gatherUsageStats=false \
+    '
+Restart=on-failure
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+

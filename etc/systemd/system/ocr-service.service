@@ -1,0 +1,19 @@
+[Unit]
+Description=PDF OCR Processing Tool
+After=network.target
+
+[Service]
+User=root
+Group=root
+Environment="HF_HOME=/var/cache/timebot/huggingface"
+Environment="CUDA_CACHE_PATH=/var/cache/nvidia"
+WorkingDirectory=/usr/local/lib/timebot/
+ExecStart=/usr/local/bin/ocr_server.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
