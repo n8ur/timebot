@@ -17,12 +17,12 @@ TIMEBOT_CHAT_BASE_URL = config["TIMEBOT_CHAT_BASE_URL"]
 OLLAMA_API_URL = config["OLLAMA_API_URL"]
 OLLAMA_MODEL = config["OLLAMA_MODEL"]
 
-# External model configuration
-EXTERNAL_LLM_ENABLED = config["EXTERNAL_LLM_ENABLED"]
-if isinstance(config.get("EXTERNAL_LLM_ENABLED"), str):
-    EXTERNAL_LLM_ENABLED = config.get("EXTERNAL_LLM_ENABLED").lower() == "true"
+# External LLM configuration
+USE_EXTERNAL_LLM = config["USE_EXTERNAL_LLM"]
+if isinstance(config.get("USE_EXTERNAL_LLM"), str):
+    USE_EXTERNAL_LLM = config.get("USE_EXTERNAL_LLM").lower() == "true"
 else:
-    EXTERNAL_LLM_ENABLED = bool(config.get("EXTERNAL_LLM_ENABLED", False))
+    USE_EXTERNAL_LLM = bool(config.get("USE_EXTERNAL_LLM", False))
 
 EXTERNAL_LLM_API_URL = config["EXTERNAL_LLM_API_URL"]
 EXTERNAL_LLM_API_KEY = config["EXTERNAL_LLM_API_KEY"]
@@ -40,15 +40,11 @@ LLM_ENHANCEMENT_MODEL = "gemini-2.0-flash"
 ENABLE_OLLAMA_FALLBACK = config[
     "ENABLE_OLLAMA_FALLBACK"
 ]  # False to disable Ollama fallback
-USE_GOOGLE_AI = EXTERNAL_LLM_ENABLED  # Use the same toggle as external LLM
-GOOGLE_AI_API_URL = EXTERNAL_LLM_API_URL  # Reuse the existing API URL
-GOOGLE_AI_API_KEY = EXTERNAL_LLM_API_KEY  # Reuse the existing API key
-GOOGLE_AI_MODEL = EXTERNAL_LLM_MODEL  # Reuse the existing model name
-GOOGLE_API_MAX_RETRIES = config[
-    "GOOGLE_API_MAX_RETRIES"
-]  # Maximum retries for Google API
-GOOGLE_API_RETRY_DELAY = config[
-    "GOOGLE_API_RETRY_DELAY"
+EXTERNAL_LLM_API_MAX_RETRIES = config[
+    "EXTERNAL_LLM_API_MAX_RETRIES"
+]  # Maximum retries for external LLM API
+EXTERNAL_LLM_API_RETRY_DELAY = config[
+    "EXTERNAL_LLM_API_RETRY_DELAY"
 ]  # Base delay for exponential backoff
 
 

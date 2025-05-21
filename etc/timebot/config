@@ -63,15 +63,15 @@ CHROMADB_WEB_COLLECTION="web"
 EMBEDDING_MODEL="BAAI/bge-m3"
 RERANKER_MODEL="BAAI/bge-reranker-large"
 
-# For external LLM if we go that route
-# EXTERNAL_LLM_ENABLED=True  # Only used as a direct variable in chat_config.py, not accessed from config dictionary
+# For external LLM (Gemini, OpenAI, etc.)
+USE_EXTERNAL_LLM=True
 EXTERNAL_LLM_API_URL="https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent"
 EXTERNAL_LLM_API_KEY="AIzaSyBoymqJ_Jfh7YL30Yw3b17mHUX2nTrDOKA" # gemini
 EXTERNAL_LLM_MODEL="gemini-2.0-flash"
 MAX_OUTPUT_TOKENS=4096
 ENABLE_OLLAMA_FALLBACK=False
-GOOGLE_API_MAX_RETRIES=3
-GOOGLE_API_RETRY_DELAY=2
+EXTERNAL_LLM_API_MAX_RETRIES=3
+EXTERNAL_LLM_API_RETRY_DELAY=2
 
 # AI Vars
 OLLAMA_API_URL="http://10.73.1.70:11434/api/generate"

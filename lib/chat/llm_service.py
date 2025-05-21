@@ -18,32 +18,31 @@ from chat.chat_config import (
     EXTERNAL_LLM_API_KEY,
     EXTERNAL_LLM_MODEL,
     MAX_OUTPUT_TOKENS,
-    USE_GOOGLE_AI,
+    USE_EXTERNAL_LLM,
     ENABLE_OLLAMA_FALLBACK,
-    GOOGLE_API_MAX_RETRIES,
-    GOOGLE_API_RETRY_DELAY,
+    EXTERNAL_LLM_API_MAX_RETRIES,
+    EXTERNAL_LLM_API_RETRY_DELAY,
 )
 
 logger = logging.getLogger(__name__)
 
-# Import Google AI service if enabled
-if USE_GOOGLE_AI:
-    from chat.google_ai_service import GoogleAIService
+# Import external LLM service if enabled
+if USE_EXTERNAL_LLM:
+    from chat.external_llm_service import ExternalLLMService
+    external_llm_service = None  # Will be initialized in main.py
 
-    google_ai_service = None  # Will be initialized in main.py
 
-
-def initialize_google_ai_service(config, auth_service=None):
-    """Initialize the Google AI service with config and auth service"""
-    global google_ai_service
-    if USE_GOOGLE_AI:
-        google_ai_service = GoogleAIService(config, auth_service)
-        logger.debug("Google AI service initialized")
+def initialize_external_llm_service(config, auth_service=None):
+    """Initialize the external LLM service with config and auth service"""
+    global external_llm_service
+    if USE_EXTERNAL_LLM:
+        external_llm_service = ExternalLLMService(config, auth_service)
+        logger.debug("External LLM service initialized")
 
 
 def query_llm(
     prompt: str,
-    model: Optional[str] = None, # MODIFIED: Was 'model: str = OLLAMA_MODEL'
+    model: Optional[str] = None, 
     context: str = "",
     conversation_history: Optional[List[Dict[str, Any]]] = None,
     user_id: Optional[str] = None,
@@ -51,14 +50,14 @@ def query_llm(
     """
     Send a prompt to the LLM API and return the response.
     Automatically routes to either local Ollama, external API,
-    or Google AI based on configuration.
+    or external LLM based on configuration.
 
     Args:
         prompt: The current user query or enhanced prompt
         model: The model to use. If None, defaults will apply per service.
         context: Additional context from RAG
         conversation_history: List of previous messages in the conversation
-        user_id: The user ID for rate limiting (only used with Google AI)
+        user_id: The user ID for rate limiting (only used with external LLM)
     """
     # Log the prompt and context being sent to the LLM
     logger.debug(f"LLM REQUEST - Prompt: {prompt[:200]}...")
@@ -91,11 +90,11 @@ def query_llm(
         logger.debug("LLM CONTEXT - No conversation history provided")
 
     # Route to the appropriate LLM service
-    if USE_GOOGLE_AI and google_ai_service:
-        # Use Google AI service with retries and rate limiting
-        result = query_google_ai_with_retries(
+    if USE_EXTERNAL_LLM and external_llm_service:
+        # Use external LLM service with retries and rate limiting
+        result = query_external_llm_with_retries(
             prompt,
-            model=model, # MODIFIED: Pass the model parameter
+            model=model, 
             context=context,
             conversation_history=conversation_history,
             user_id=user_id
@@ -129,7 +128,7 @@ def query_llm(
     elif EXTERNAL_LLM_ENABLED:
         return query_external_llm(
             prompt,
-            model=model, # MODIFIED: Pass the model parameter
+            model=model, 
             context=context,
             conversation_history=conversation_history
         )
@@ -144,19 +143,19 @@ def query_llm(
         )
 
 
-def query_google_ai_with_retries(
+def query_external_llm_with_retries(
     prompt: str,
-    model: Optional[str] = None, # MODIFIED: Added model parameter
+    model: Optional[str] = None, 
     context: str = "",
     conversation_history: Optional[List[Dict[str, Any]]] = None,
     user_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
-    Query Google AI with retry logic using exponential backoff
+    Query external LLM with retry logic using exponential backoff
 
     Args:
         prompt: The current user query or enhanced prompt
-        model: The specific Google AI model to use.
+        model: The specific external LLM model to use.
         context: Additional context from RAG
         conversation_history: List of previous messages in the conversation
         user_id: The user ID for rate limiting
@@ -164,17 +163,17 @@ def query_google_ai_with_retries(
     Returns:
         Dictionary with response data and status
     """
-    max_retries = GOOGLE_API_MAX_RETRIES
-    base_delay = GOOGLE_API_RETRY_DELAY
+    max_retries = EXTERNAL_LLM_API_MAX_RETRIES
+    base_delay = EXTERNAL_LLM_API_RETRY_DELAY
 
     for attempt in range(max_retries + 1):  # +1 for the initial attempt
         try:
-            # Call the Google AI service
-            # MODIFIED: Pass model to google_ai_service.query_google_ai
-            # This assumes google_ai_service.query_google_ai can handle the 'model' arg.
-            result = google_ai_service.query_google_ai(
+            # Call the external LLM service
+            # MODIFIED: Pass model to external_llm_service.query_external_llm(
+            # This assumes external_llm_service.query_external_llm( can handle the 'model' arg.
+            result = external_llm_service.query_external_llm(
                 prompt,
-                model=model, # Pass the model argument
+                model=model, 
                 context=context,
                 conversation_history=conversation_history,
                 user_id=user_id

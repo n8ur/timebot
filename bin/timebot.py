@@ -52,7 +52,7 @@ setup_page()  # Call this immediately
 from shared.config import config
 
 # Import other modules
-from chat.chat_config import STARTUP_SEMAPHORE, USE_GOOGLE_AI
+from chat.chat_config import STARTUP_SEMAPHORE, USE_EXTERNAL_LLM
 from chat.info_page import display_info_page
 from chat.rag_service import query_rag, query_metadata
 from chat.llm_service import query_llm, initialize_google_ai_service
@@ -66,11 +66,11 @@ if USE_FIREBASE_AUTH:
     auth_service = AuthService(config)
     
     # Initialize Google AI service with auth service if enabled
-    if USE_GOOGLE_AI:
+    if USE_EXTERNAL_LLM:
         initialize_google_ai_service(config, auth_service)
 else:
     # Initialize Google AI service without auth service
-    if USE_GOOGLE_AI:
+    if USE_EXTERNAL_LLM:
         initialize_google_ai_service(config)
 
 def main():
@@ -108,7 +108,7 @@ def main():
         )
         
         # Display usage statistics if Google AI is enabled and user is authenticated
-        if USE_GOOGLE_AI and USE_FIREBASE_AUTH and st.session_state.get("authenticated", False):
+        if USE_EXTERNAL_LLM and USE_FIREBASE_AUTH and st.session_state.get("authenticated", False):
             display_usage_stats()
 
     # Render the footer
