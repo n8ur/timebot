@@ -57,7 +57,7 @@ from chat.info_page import display_info_page
 from chat.rag_service import query_rag, query_metadata
 from chat.llm_service import query_llm, initialize_google_ai_service
 from chat.ui import set_font_size, render_footer, display_chat_interface, handle_navigation, display_usage_stats, create_sidebar
-from chat.utils import format_context, format_references
+from chat.chat_utils import format_context, format_references
 
 # Import authentication service if enabled
 USE_FIREBASE_AUTH = config["USE_FIREBASE_AUTH"]

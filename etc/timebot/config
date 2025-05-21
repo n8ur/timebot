@@ -1,0 +1,170 @@
+# Config file for timebot expert system
+#
+# NOTE:  The configuration-reader attempts to convert
+# variables to strings.  To ensure this doesn't happen,
+# surround all string values with quotes
+#
+# Location of python functions and support files
+SERVER_DIR="/usr/local/lib/timebot"
+PYTHON_MODULE_DIR="/usr/local/lib/timebot/lib"
+PYTHON_STATIC_DIR="/usr/local/lib/timebot/static"
+PYTHON_TEMPLATE_DIR="/usr/local/lib/timebot/templates"
+DATA_DIR="/var/lib/timebot"
+
+# API and other keys
+GOOGLE_APPLICATION_CREDENTIALS="/etc/timebot/time-nuts-ocr-a239b60893f1.json"
+OCR_SECRET_KEY="e1e9281fab5d222c2d94b176ed349b33017d9d5dd81da16974d8a3eaa5209a82"
+OCR_UPLOAD_KEY="/etc/timebot/ocr-upload-key"
+OCR_UPLOAD_USER="ocr-upload"
+
+# Firebase vars set at bottom of file
+USE_FIREBASE_AUTH=True
+
+# Email Directories
+EMAIL_HTML_UNPROCESSED_DIR="/var/lib/timebot/email/unprocessed/time-nuts-html"
+EMAIL_HTML_PROCESSED_DIR="/var/lib/timebot/email/processed/time-nuts-html"
+EMAIL_TEXT_UNPROCESSED_DIR="/var/lib/timebot/email/unprocessed/time-nuts-text"
+EMAIL_TEXT_PROCESSED_DIR="/var/lib/timebot/email/processed/time-nuts-text"
+
+# Document sequence file
+DOC_SEQUENCE_FILE="/var/lib/timebot/docs/sequence.txt"
+
+# Where sequence-numbered PDF files live
+DOC_PDF_DIR="/var/lib/timebot/docs/pdf"
+DOC_TEXT_UNPROCESSED_DIR="/var/lib/timebot/docs/unprocessed-text"
+DOC_TEXT_PROCESSED_DIR="/var/lib/timebot/docs/processed-text"
+
+# Web documents
+WEB_TEXT_UNPROCESSED_DIR="/var/lib/timebot/web/unprocessed-text"
+WEB_TEXT_PROCESSED_DIR="/var/lib/timebot/web/processed-text"
+
+# Search params
+DEFAULT_SIMILARITY_THRESHOLD=0.5
+DEFAULT_FUZZY_SEARCH=True
+USE_RERANKING=True
+TOP_K=10    # For RAG
+TIMEBOT_SEARCH_TOP_K=30     # For user searches
+
+# Chunking
+DOC_CHUNK_SIZE=500
+DOC_CHUNK_OVERLAP=75
+WEB_CHUNK_SIZE=500
+WEB_CHUNK_OVERLAP=75
+
+# Database paths
+CHROMADB_PATH="/var/lib/timebot/db/chromadb"
+WHOOSHDB_EMAIL_PATH="/var/lib/timebot/db/whooshdb_email"
+WHOOSHDB_DOC_PATH="/var/lib/timebot/db/whooshdb_docs"
+WHOOSHDB_WEB_PATH="/var/lib/timebot/db/whooshdb_web"
+
+# ChromaDB collections
+CHROMADB_EMAIL_COLLECTION="emails"
+CHROMADB_DOC_COLLECTION="documents"
+CHROMADB_WEB_COLLECTION="web"
+
+# Models
+INFERENCE_MODEL="granite3.2:8b"
+EMBEDDING_MODEL="BAAI/bge-m3"
+RERANKER_MODEL="BAAI/bge-reranker-large"
+
+# For external LLM if we go that route
+EXTERNAL_LLM_ENABLED=True
+EXTERNAL_LLM_API_URL="https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent"
+EXTERNAL_LLM_API_KEY="AIzaSyBoymqJ_Jfh7YL30Yw3b17mHUX2nTrDOKA" # gemini
+EXTERNAL_LLM_MODEL="gemini-2.0-flash"
+MAX_OUTPUT_TOKENS=4096
+ENABLE_OLLAMA_FALLBACK=False
+GOOGLE_API_MAX_RETRIES=3
+GOOGLE_API_RETRY_DELAY=2
+
+# AI Vars
+OLLAMA_API_URL="http://10.73.1.70:11434/api/generate"
+OLLAMA_MODEL="mistral:7b-instruct"
+
+# Weighting configuration
+DOCUMENT_COLLECTION_WEIGHT=1.4
+EMAIL_COLLECTION_WEIGHT=1.0
+WEB_COLLECTION_WEIGHT=1.2
+RECENCY_WEIGHT=0.1
+RECENCY_DECAY_DAYS=1095
+CHROMADB_WEIGHT=1.0
+WHOOSH_WEIGHT=1.0
+RERANKER_WEIGHT=0.8
+USE_WEIGHTING=True
+SIMILARITY_THRESHOLD=0.5
+
+# Base URLs for public storage
+ARCHIVE_BASE_URL="https://febo.com/pipermail/time-nuts_lists.febo.com"
+DOC_BASE_URL="https://febo.com/timebot_docs"
+
+# febo.com upload and download locations
+REMOTE_SERVER="web.febo.com"
+ARCHIVE_DIR="/var/lib/mailman/archive/private/time-nuts_lists.febo.com"
+TIMEBOT_PDF_DIR="/var/www/febo.com/timebot_docs"
+TIMEBOT_TEXT_DIR="/var/www/febo.com/timebot_docs/text"
+
+# Server URLs and ports
+
+ADMIN_DASHBOARD_PASSWORD="9192MHz"
+ADMIN_DASHBOARD_LISTEN_ADDRESS="0.0.0.0"
+ADMIN_DASHBOARD_PORT="8800"
+
+EMBEDDING_SERVER_URL="http://localhost"
+EMBEDDING_SERVER_LISTEN_ADDR="0.0.0.0"
+EMBEDDING_SERVER_PORT="8100"
+
+OCR_SERVER_URL="http://localhost"
+OCR_SERVER_LISTEN_ADDR="0.0.0.0"
+OCR_SERVER_PORT="8200"
+
+PTTI_OCR_SERVER_URL="http://localhost"
+PTTI_OCR_SERVER_LISTEN_ADDR="0.0.0.0"
+PTTI_OCR_SERVER_PORT="8250"
+
+TIMEBOT_SEARCH_URL="http://localhost"
+TIMEBOT_SEARCH_LISTEN_ADDR="0.0.0.0"
+TIMEBOT_SEARCH_PORT="8300"
+
+TIMEBOT_CHAT_URL="http://localhost"
+TIMEBOT_CHAT_BASE_URL="https://timebot.febo.com"
+TIMEBOT_CHAT_LISTEN_ADDR="0.0.0.0"
+TIMEBOT_CHAT_PORT="8400"
+
+# Paths to scripts
+HTML_TO_TEXT_SCRIPT="/usr/local/bin/html-to-text.py"
+PDF_CONVERTER="/usr/local/bin/pdf_to_text.py"
+EMAIL_INGEST_SCRIPT="/usr/local/bin/email_ingest.py"
+DOC_INGEST_SCRIPT="/usr/local/bin/document_ingest.py"
+WEB_SEARCH_SCRIPT="/usr/local/bin/timebot_search.py"
+
+# Log locations
+ARCHIVE_DOWNLOAD_LOG="/var/log/timebot/archive-download.log"
+PIPERMAIL2TEXT_LOG="/var/log/timebot/pipermail2text.log"
+OCR_LOG_FILE="/var/lib/timebot/docs/ocr.log"
+EMBEDDING_SERVICE_LOG="/var/log/timebot/embedding-service.log"
+TIMEBOT_LOG="/var/log/timebot/timebot.log"
+
+# Firebase Authentication Config (only needed if USE_FIREBASE_AUTH is True)
+FIREBASE_API_KEY="AIzaSyAwAte7Bg7SgFnnCAv9rsX4YE2XjyHn2gA"
+FIREBASE_AUTH_DOMAIN="timebot-auth.firebaseapp.com"
+FIREBASE_DATABASE_URL="https=//timebot-auth.firebaseio.com"
+FIREBASE_PROJECT_ID="timebot-auth"
+FIREBASE_STORAGE_BUCKET="timebot-auth.appspot.com"
+FIREBASE_MESSAGING_SENDER_ID="992483667649"
+FIREBASE_APP_ID="1:992483667649:web:c364ebdf60aaa20a6e6e40"
+FIREBASE_SERVICE_ACCOUNT_KEY="/etc/timebot/timebot-auth-firebase-adminsdk-fbsvc-b9df932eca.json"
+
+# Firebase user API limits
+FREE_DAILY_LIMIT=30
+FREE_MONTHLY_LIMIT=150
+PREMIUM_DAILY_LIMIT=50
+PREMIUM_MONTHLY_LIMIT=500
+ADMIN_DAILY_LIMIT=100000
+ADMIN_MONTHLY_LIMIT=100000
+
+
+FIREBASE_ADMIN_EMAIL="jra@febo.com"
+FIREBASE_EMAIL_SENDER="jra@febo.com"
+SMTP_SERVER="mail-relay.febo.com"
+SMTP_PORT="587"
+SMTP_USERNAME="jra"

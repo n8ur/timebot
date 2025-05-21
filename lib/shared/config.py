@@ -11,6 +11,7 @@ import argparse
 from dotenv import load_dotenv
 
 load_dotenv("/etc/timebot/config")
+load_dotenv("/etc/timebot/secrets")
 
 """
 We're not calling argparse because that messes up gunicorn
