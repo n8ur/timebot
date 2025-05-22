@@ -13,8 +13,9 @@ import re
 from typing import Dict, Any, List, Optional
 
 from shared.config import config
-# Use config["EMBEDDING_SERVER_URL"], config["EMBEDDING_SERVER_PORT"], etc. directly below.
-from chat.prompts import SYSTEM_PROMPT, LLM_ENHANCEMENT_PROMPT_TEMPLATE
+# Use config["config["EMBEDDING_SERVER_URL"]"], etc. directly below.
+
+from chat.prompts import SYSTEM_PROMPT, LLM_ENHANCEMENT_PROMPT
 
 import chat.rag_enhancement # For LLM-based query enhancement
 import chat.llm_service     # To pass llm_service.query_llm as a callable
@@ -108,7 +109,7 @@ def enhance_query( # This is the original rule-based enhance_query
     logger.info(f"ENHANCE DEBUG - Starting RULE-BASED enhancement of query: '{query_to_enhance}'")
 
     enable_enhancement = st.session_state.get(
-        "enable_query_enhancement", DEFAULT_ENABLE_RULE_BASED_ENHANCEMENT
+        "enable_query_enhancement", config["ENABLE_RULE_BASED_ENHANCEMENT"]
     )
     if not enable_enhancement:
         logger.debug("ENHANCE DEBUG - Rule-based enhancement disabled in settings (session/default).")
@@ -213,8 +214,8 @@ def enhance_query( # This is the original rule-based enhance_query
 
 def query_rag(
     query: str, # This is the original user query from the UI
-    top_k: int = TOP_K,
-    similarity_threshold: float = SIMILARITY_THRESHOLD,
+    top_k: int = config["TOP_K"],
+    similarity_threshold: float = config["SIMILARITY_THRESHOLD"],
     collection_filter: str = "all",
     mode: str = "combined",
     conversation_history: Optional[List[Dict[str, Any]]] = None, # Includes `query` as last user message
@@ -245,7 +246,7 @@ def query_rag(
 
 
         # Step 2: LLM-based Query Enhancement (if enabled globally)
-        if ENABLE_LLM_QUERY_ENHANCEMENT:
+        if config["ENABLE_LLM_QUERY_ENHANCEMENT"]:
             logger.debug(
                 f"RAG DEBUG - Attempting LLM query enhancement for: '{query_for_processing}'"
             )
@@ -275,8 +276,8 @@ def query_rag(
                 conversation_history=history_for_llm_enhancer,
                 llm_querier=chat.llm_service.query_llm,
                 enable_llm_enhancement=True, # Already guarded by outer if
-                enhancement_prompt_template=LLM_ENHANCEMENT_PROMPT_TEMPLATE,
-                enhancement_model=LLM_ENHANCEMENT_MODEL,
+                enhancement_prompt_template=LLM_ENHANCEMENT_PROMPT,
+                enhancement_model=config["LLM_ENHANCEMENT_MODEL"],
             )
             query_after_llm_stage = llm_enhanced_output # Store result of LLM stage
 
@@ -303,7 +304,7 @@ def query_rag(
         final_query_for_rag = query_for_processing # Initialize with (potentially LLM-enhanced) query
 
         enable_rule_based_ui_toggle = st.session_state.get(
-            "enable_query_enhancement", DEFAULT_ENABLE_RULE_BASED_ENHANCEMENT
+            "enable_query_enhancement", config["ENABLE_RULES_QUERY_ENHANCEMENT"]
         )
         logger.debug(
             f"RAG DEBUG - Rule-based follow-up enhancement UI toggle: {enable_rule_based_ui_toggle}"
@@ -380,7 +381,7 @@ def query_rag(
                 f"RAG DEBUG - Executing new RAG search with query: '{final_query_for_rag}'"
             )
             endpoint = "/api/query"
-            full_url = f"{EMBEDDING_SERVER_URL}:{EMBEDDING_SERVER_PORT}{endpoint}"
+            full_url = f"{config['EMBEDDING_SERVER_URL']}:{config['EMBEDDING_SERVER_PORT']}{endpoint}"
             payload = {
                 "query": final_query_for_rag,
                 "similarity_threshold": similarity_threshold,
@@ -468,7 +469,7 @@ def clear_rag_cache():
 def query_metadata( # Original function
     metadata: Dict[str, str],
     query: str = "",
-    top_k: int = TOP_K,
+    top_k: int = config["TOP_K"],
     collection_filter: str = "all",
     metadata_fuzzy: bool = True,
     metadata_threshold: float = 0.8,
@@ -479,7 +480,10 @@ def query_metadata( # Original function
     logger.info("--- Entered rag_service.query_metadata ---")
     try:
         endpoint = "/api/metadata_search"
-        full_url = f"{EMBEDDING_SERVER_URL}:{EMBEDDING_SERVER_PORT}{endpoint}"
+        base_url = config['EMBEDDING_SERVER_URL']
+        if not base_url.startswith(('http://', 'https://')):
+            base_url = f"http://{base_url}"
+        full_url = f"{base_url}:{config['EMBEDDING_SERVER_PORT']}{endpoint}"
 
         payload = {
             "metadata": {

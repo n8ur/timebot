@@ -27,18 +27,25 @@ class ExternalLLMService:
         self.auth_service = auth_service
 
         # External LLM API configuration
-        self.api_key = config.get("EXTERNAL_LLM_API_KEY", "")
-        self.api_url = config.get("EXTERNAL_LLM_API_URL", "")
-        self.model = config.get("EXTERNAL_LLM_MODEL", "")
-        self.max_output_tokens = config.get("MAX_OUTPUT_TOKENS", 2048)
+        self.api_key = config["EXTERNAL_LLM_API_KEY"]
+        self.api_url = config["EXTERNAL_LLM_API_URL"]
+        self.model = config["EXTERNAL_LLM_MODEL"]
+        self.max_output_tokens = config["MAX_OUTPUT_TOKENS"]
+
+        # Debug log for credential loading
+        if self.api_key:
+            obfuscated_key = self.api_key[:6] + "..." + self.api_key[-4:]
+        else:
+            obfuscated_key = "<EMPTY>"
+        logger.info(f"[DEBUG] ExternalLLMService initialized with API URL: {self.api_url}, API KEY: {obfuscated_key}")
 
         # Rate limiting configuration
-        self.default_daily_limit = config.get("DEFAULT_DAILY_LIMIT", 10)
-        self.default_monthly_limit = config.get("DEFAULT_MONTHLY_LIMIT", 100)
+        self.default_daily_limit = config["FREE_DAILY_LIMIT"]
+        self.default_monthly_limit = config["FREE_MONTHLY_LIMIT"]
 
         # Fallback configuration
-        self.use_fallback = config.get("USE_FALLBACK_ON_LIMIT", True)
-        self.fallback_model = config.get("FALLBACK_MODEL", "ollama")
+        self.use_fallback = config["USE_FALLBACK_ON_LIMIT"]
+        self.fallback_model = config["FALLBACK_MODEL"]
 
     def check_rate_limits(self, user_id: str) -> Dict[str, Any]:
         """
@@ -226,32 +233,29 @@ class ExternalLLMService:
                         "limits": rate_limit_info.get("limits", {}),
                         "usage": rate_limit_info.get("usage", {}),
                     }
-        # Prepare API request
-        api_url = self.api_url
-        api_key = self.api_key
-        model = model or self.model
+        # Prepare API request and send
         headers = {"Content-Type": "application/json"}
-        if api_key:
-            headers["Authorization"] = f"Bearer {api_key}"
-        # Prepare payload (Gemini-style, update for other LLMs as needed)
         contents = []
         if conversation_history:
-            for msg in conversation_history:
-                role = msg.get("role", "user")
-                content = msg.get("content", "")
-                contents.append({"role": role, "parts": [{"text": content}]})
+            for message in conversation_history:
+                contents.append({
+                    "role": message["role"],
+                    "parts": [{"text": message["content"]}],
+                })
         contents.append({"role": "user", "parts": [{"text": prompt}]})
         payload = {
             "contents": contents,
             "generationConfig": {
-                "temperature": 0.7,
                 "maxOutputTokens": self.max_output_tokens,
-                "topP": 0.95,
-                "topK": 40,
             },
         }
+        # Ensure the API URL has a scheme
+        api_url = self.api_url
+        if not api_url.startswith("http://") and not api_url.startswith("https://"):
+            api_url = "https://" + api_url  # Default to https
+        url = f"{api_url}?key={self.api_key}" if self.api_key else api_url
         try:
-            response = requests.post(api_url, headers=headers, json=payload)
+            response = requests.post(url, headers=headers, json=payload)
             if response.status_code != 200:
                 logger.error(f"EXTERNAL LLM ERROR - HTTP {response.status_code}: {response.text}")
                 return {"success": False, "error": response.text, "used_fallback": False}

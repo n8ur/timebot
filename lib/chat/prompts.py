@@ -63,7 +63,7 @@ Context: {context}
 User question: {question}
 """
 
-LLM_ENHANCEMENT_PROMPT_TEMPLATE = """
+LLM_ENHANCEMENT_PROMPT = """
 Your task is to rewrite the following user query to be more effective for
 searching a technical knowledge base. The knowledge base is strictly
 focused on time and frequency measurement, related physics principles

@@ -61,12 +61,12 @@ def initialize_session_state():
         )
 
     if "top_k" not in st.session_state:
-        st.session_state.top_k = TOP_K
+        st.session_state.top_k = config["TOP_K"]
 
     # Initialize rule-based query enhancement toggle if not present
     if "enable_query_enhancement" not in st.session_state:
         st.session_state.enable_query_enhancement = (
-            ENABLE_QUERY_ENHANCEMENT # Default from chat_config
+            config["ENABLE_RULES_QUERY_ENHANCEMENT"]
         )
 
     # Initialize RAG cache with new detailed structure
@@ -170,7 +170,7 @@ def setup_rag_controls():
 
     if "enable_query_enhancement" not in st.session_state: # Should be handled by initialize_session_state
         st.session_state.enable_query_enhancement = (
-            ENABLE_QUERY_ENHANCEMENT # Default from chat_config
+            config["ENABLE_RULES_QUERY_ENHANCEMENT"]
         )
 
     with st.sidebar:

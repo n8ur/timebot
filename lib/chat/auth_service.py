@@ -462,8 +462,8 @@ class AuthService:
                                         },
                                         "limits": {
                                             "google_ai": {
-                                                "daily": FREE_DAILY_LIMIT,
-                                                "monthly": FREE_MONTHLY_LIMIT,
+                                                "daily": self.config["FREE_DAILY_LIMIT"],
+                                                "monthly": self.config["FREE_MONTHLY_LIMIT"],
                                             }
                                         },
                                     }
@@ -776,14 +776,14 @@ class AuthService:
         try:
             # Get the appropriate limits based on role
             if role == "premium":
-                daily_limit = PREMIUM_DAILY_LIMIT
-                monthly_limit = PREMIUM_MONTHLY_LIMIT
+                daily_limit = self.config["PREMIUM_DAILY_LIMIT"]
+                monthly_limit = self.config["PREMIUM_MONTHLY_LIMIT"]
             elif role == "admin":
-                daily_limit = ADMIN_DAILY_LIMIT
-                monthly_limit = ADMIN_MONTHLY_LIMIT
+                daily_limit = self.config["ADMIN_DAILY_LIMIT"]
+                monthly_limit = self.config["ADMIN_MONTHLY_LIMIT"]
             else:  # Default to free
-                daily_limit = FREE_DAILY_LIMIT
-                monthly_limit = FREE_MONTHLY_LIMIT
+                daily_limit = self.config["FREE_DAILY_LIMIT"]
+                monthly_limit = self.config["FREE_MONTHLY_LIMIT"]
 
             # Update user document in Firestore
             self.db.collection("users").document(user_id).update(
@@ -821,7 +821,7 @@ class AuthService:
     def get_user_limits(self, user_id):
         """Get the user's current usage limits"""
         if not self.use_auth:
-            return {"daily": ADMIN_DAILY_LIMIT, "monthly": ADMIN_MONTHLY_LIMIT}
+            return {"daily": self.config["ADMIN_DAILY_LIMIT"], "monthly": self.config["ADMIN_MONTHLY_LIMIT"]}
 
         try:
             user_doc = self.db.collection("users").document(user_id).get()
@@ -829,10 +829,10 @@ class AuthService:
                 user_data = user_doc.to_dict()
                 limits = user_data.get("limits", {}).get("google_ai", {})
                 return {
-                    "daily": limits.get("daily", FREE_DAILY_LIMIT),
-                    "monthly": limits.get("monthly", FREE_MONTHLY_LIMIT),
+                    "daily": limits.get("daily", self.config["FREE_DAILY_LIMIT"]),
+                    "monthly": limits.get("monthly", self.config["FREE_MONTHLY_LIMIT"]),
                 }
-            return {"daily": FREE_DAILY_LIMIT, "monthly": FREE_MONTHLY_LIMIT}
+            return {"daily": self.config["FREE_DAILY_LIMIT"], "monthly": self.config["FREE_MONTHLY_LIMIT"]}
         except Exception as e:
             logger.error(f"Error getting user limits: {str(e)}")
-            return {"daily": FREE_DAILY_LIMIT, "monthly": FREE_MONTHLY_LIMIT}
+            return {"daily": self.config["FREE_DAILY_LIMIT"], "monthly": self.config["FREE_MONTHLY_LIMIT"]}

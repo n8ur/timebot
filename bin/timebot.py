@@ -11,6 +11,9 @@ import datetime
 import logging
 from pathlib import Path
 
+# Path to the startup semaphore file
+STARTUP_SEMAPHORE = "/var/run/timebot_startup.semaphore"
+
 # Add the timebot library path to Python's path
 sys.path.append("/usr/local/lib/timebot/lib")
 
@@ -52,10 +55,9 @@ setup_page()  # Call this immediately
 from shared.config import config
 
 # Import other modules
-from chat.chat_config import STARTUP_SEMAPHORE, USE_EXTERNAL_LLM
 from chat.info_page import display_info_page
 from chat.rag_service import query_rag, query_metadata
-from chat.llm_service import query_llm, initialize_google_ai_service
+from chat.llm_service import query_llm, initialize_external_llm_service
 from chat.ui import set_font_size, render_footer, display_chat_interface, handle_navigation, display_usage_stats, create_sidebar
 from chat.chat_utils import format_context, format_references
 
@@ -66,12 +68,12 @@ if USE_FIREBASE_AUTH:
     auth_service = AuthService(config)
     
     # Initialize Google AI service with auth service if enabled
-    if USE_EXTERNAL_LLM:
-        initialize_google_ai_service(config, auth_service)
+    if config["USE_EXTERNAL_LLM"]:
+        initialize_external_llm_service(config, auth_service)
 else:
     # Initialize Google AI service without auth service
-    if USE_EXTERNAL_LLM:
-        initialize_google_ai_service(config)
+    if config["USE_EXTERNAL_LLM"]:
+        initialize_external_llm_service(config)
 
 def main():
 
@@ -108,14 +110,14 @@ def main():
         )
         
         # Display usage statistics if Google AI is enabled and user is authenticated
-        if USE_EXTERNAL_LLM and USE_FIREBASE_AUTH and st.session_state.get("authenticated", False):
+        if config["USE_EXTERNAL_LLM"] and config["USE_FIREBASE_AUTH"] and st.session_state.get("authenticated", False):
             display_usage_stats()
 
     # Render the footer
     render_footer()
 
 if __name__ == "__main__":
-    if USE_FIREBASE_AUTH:
+    if config["USE_FIREBASE_AUTH"]:
         # Apply authentication wrapper if enabled
         main = auth_service.auth_required(main)
     main()
