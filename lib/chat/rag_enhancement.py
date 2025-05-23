@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 def _construct_enhancement_prompt(
     original_query: str,
-    conversation_history: Optional[List[Dict[str, Any]]] = None,
     prompt_template: str,
+    conversation_history: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     """
     Constructs the prompt to be sent to the LLM for query enhancement.
@@ -84,7 +84,7 @@ def enhance_query_with_llm(
         #    only enhance if the query is short, or if it contains pronouns,
         #    or based on conversation history.
         prompt_for_llm = _construct_enhancement_prompt(
-            original_query, conversation_history, enhancement_prompt_template
+            original_query, enhancement_prompt_template, conversation_history
         )
 
         # 2. Call the LLM using the provided llm_querier function.
