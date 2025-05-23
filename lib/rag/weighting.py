@@ -11,6 +11,8 @@ import datetime
 from dateutil import parser as date_parser
 from typing import List, Dict, Any
 
+from shared.config import config
+
 def calculate_recency_score(date_str, recency_decay_days):
     """
     Calculate a recency score based on document date.
@@ -49,7 +51,7 @@ def calculate_recency_score(date_str, recency_decay_days):
         print(f"Error calculating recency score: {e}")
         return 0.5  # Default middle value if date parsing fails
 
-def apply_weighting(results, config):
+def apply_weighting(results):
     """
     Apply weighting to search results based on configuration.
     This function is a dispatcher that calls the appropriate weighting function.
@@ -77,7 +79,7 @@ def apply_weighting(results, config):
         return apply_diversity_weights(results, config)
 
 
-def apply_diversity_weights(results, config):
+def apply_diversity_weights(results):
     """
     Apply minimal weighting to ensure diversity before reranking.
     This prevents any single source from dominating the results
@@ -94,7 +96,8 @@ def apply_diversity_weights(results, config):
     
     # Extract diversity parameters from config
     # Strict config policy: missing DIVERSITY_FACTOR is a configuration error
-    diversity_factor = float(config["DIVERSITY_FACTOR"])
+    from shared.config import config as global_config
+    diversity_factor = float(global_config["DIVERSITY_FACTOR"])
     
     # Group results by source type
     by_source = {}
@@ -145,7 +148,7 @@ def apply_diversity_weights(results, config):
     
     return diversity_results
 
-def apply_final_weights(results, config):
+def apply_final_weights(results):
     """
     Apply final weighting after reranking to balance semantic relevance with business rules.
     This is where the full weighting logic is applied.

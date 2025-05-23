@@ -18,14 +18,18 @@ def query_local_ollama(
     model: str = config["OLLAMA_MODEL"],
     context: str = "",
     conversation_history: Optional[List[Dict[str, Any]]] = None,
-) -> Optional[str]:
+    user_id: Optional[str] = None,
+) -> dict:
     """
-    Send a prompt to the local Ollama API and return the response.
+    Send a prompt to the local Ollama API and return a standardized response dict.
     Args:
         prompt: The current user query or enhanced prompt
         model: The model to use
         context: Additional context from RAG
         conversation_history: List of previous messages in the conversation
+        user_id: The user ID for rate limiting (for consistency)
+    Returns:
+        Dictionary with keys: success (bool), response (str or None), error (optional, str)
     """
     try:
         messages = []
@@ -50,12 +54,12 @@ def query_local_ollama(
             response_text = result["choices"][0]["message"]["content"]
             logger.info(f"OLLAMA RESPONSE - Received response (length: {len(response_text)} chars)")
             logger.debug(f"OLLAMA RESPONSE - Preview: {response_text[:150]}...")
-            return response_text
+            return {"success": True, "response": response_text}
         else:
             response_text = result.get("response", "")
             logger.info(f"OLLAMA RESPONSE - Received response using old format (length: {len(response_text)} chars)")
             logger.debug(f"OLLAMA RESPONSE - Preview: {response_text[:150]}...")
-            return response_text
+            return {"success": True, "response": response_text}
     except requests.exceptions.RequestException as e:
         error_msg = f"Error communicating with Ollama: {str(e)}"
         logger.error(error_msg)
@@ -68,8 +72,8 @@ def query_local_ollama(
                         role_prefix = ("User: " if msg["role"] == "user" else "Assistant: ")
                         conversation_text += f"{role_prefix}{msg['content']}\n\n"
                 full_prompt = f"{conversation_text}User: {prompt}\n\nAssistant: "
-                logger.info(f"OLLAMA FALLBACK - Using fallback prompt (length: {len(full_prompt)} chars)")
-                logger.debug(f"OLLAMA FALLBACK - Prompt preview: {full_prompt[:200]}...")
+                logger.info(f"OLLAMA FALLBACK - Using fallback prompt (length: {len(full_prompt)} chars) [PROMPT_CONTENT_OMITTED]")
+                logger.debug("OLLAMA FALLBACK - Prompt preview: [PROMPT_CONTENT_OMITTED] (see SYSTEM_PROMPT)")
                 payload = {"model": model, "prompt": full_prompt, "stream": False}
                 response = requests.post(OLLAMA_API_URL, json=payload)
                 response.raise_for_status()
@@ -77,14 +81,14 @@ def query_local_ollama(
                 response_text = result.get("response", "")
                 logger.info(f"OLLAMA FALLBACK - Received fallback response (length: {len(response_text)} chars)")
                 logger.debug(f"OLLAMA FALLBACK - Preview: {response_text[:150]}...")
-                return response_text
+                return {"success": True, "response": response_text}
             except Exception as fallback_error:
                 logger.error(f"OLLAMA FALLBACK - Fallback also failed: {str(fallback_error)}")
-                return None
+                return {"success": False, "response": None, "error": f"Ollama fallback failed: {str(fallback_error)}"}
         else:
             logger.info("OLLAMA FALLBACK - Fallback is disabled, not attempting older API format")
-            return None
+            return {"success": False, "response": None, "error": "Ollama fallback is disabled."}
     except (json.JSONDecodeError, KeyError) as e:
         error_msg = f"Error parsing Ollama response: {str(e)}"
         logger.error(error_msg)
-        return None
+        return {"success": False, "response": None, "error": error_msg}

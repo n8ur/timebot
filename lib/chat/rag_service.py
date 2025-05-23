@@ -96,7 +96,8 @@ def determine_query_type(conversation_history: List[Dict[str, Any]]) -> str:
     return "new_topic"
 
 
-def enhance_follow(
+# RENAMED: This function was previously 'enhance_follow'. Renamed to 'enhance_query' for clarity.
+def enhance_query(
     query_to_enhance: str, conversation_history: Optional[List[Dict[str, Any]]] = None
 ) -> str:
     """
@@ -236,7 +237,7 @@ def query_rag(
     query_after_llm_stage = original_query # Initialize to original
 
     # `conversation_history` (if provided) includes the current `original_query` as the last user message.
-    # This full history is suitable for `determine_query_type` and `enhance_follow-up_query` (rule-based).
+    # This full history is suitable for `determine_query_type` and `enhance_query` (rule-based).
     history_for_context_funcs = conversation_history if conversation_history else []
 
     try:
@@ -271,7 +272,9 @@ def query_rag(
                     logger.debug("Could not definitively isolate history before current query for LLM enhancer.")
 
 
-            llm_enhanced_output = chat.rag_enhancement.enhance_follow-up_query_with_llm(
+            # IMPORTANT: Use enhance_query_with_llm (not enhance_follow-up_query_with_llm) from rag_enhancement.
+            # This is the correct function for LLM-based query enhancement. Do NOT revert this!
+            llm_enhanced_output = chat.rag_enhancement.enhance_query_with_llm(
                 original_query=query_for_processing, # Pass current state of query
                 conversation_history=history_for_llm_enhancer,
                 llm_querier=chat.llm_service.query_llm,
@@ -303,9 +306,9 @@ def query_rag(
 
         if enable_rule_based_ui_toggle and query_type == "follow_up":
             logger.debug(f"Calling rule-based enhanced query for follow-up question on: '{query_for_processing}'")
-            # `enhance_follow-up_query` (rule-based) needs full history (including current query)
+            # `enhance_query` (rule-based) needs full history (including current query)
             # to correctly identify the *previous* user query for context.
-            rule_enhanced_output = enhance_follow-up_query(
+            rule_enhanced_output = enhance_query(
                 query_for_processing, history_for_context_funcs # Pass full history
             )
             if rule_enhanced_output.strip().lower() != query_for_processing.strip().lower():

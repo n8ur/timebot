@@ -29,7 +29,7 @@ def _construct_enhancement_prompt(
     # prompt = prompt_template.format(history=history_context, query=original_query)
 
     prompt = prompt_template.format(query=original_query)
-    logger.debug(f"Constructed LLM enhancement prompt: {prompt}")
+    logger.debug("Constructed LLM enhancement prompt: [PROMPT_CONTENT_OMITTED] (see LLM_ENHANCEMENT_PROMPT)")
     return prompt
 
 
@@ -105,10 +105,15 @@ def enhance_query_with_llm(
             user_id=None # Assuming not needed for this internal system call
         )
 
-
         # 3. Process the LLM's response.
-        if enhanced_query_llm_response and enhanced_query_llm_response.strip():
-            enhanced_query = enhanced_query_llm_response.strip()
+        # The LLM querier may return either a string or a dict (with 'response' key).
+        # Handle both cases for robustness.
+        if isinstance(enhanced_query_llm_response, dict):
+            enhanced_query_str = enhanced_query_llm_response.get('response', '')
+        else:
+            enhanced_query_str = enhanced_query_llm_response
+        if enhanced_query_str and isinstance(enhanced_query_str, str) and enhanced_query_str.strip():
+            enhanced_query = enhanced_query_str.strip()
             # Optional: Add checks to ensure the enhanced query is not worse
             # (e.g., not empty, not excessively long, retains original intent - harder to check)
             if enhanced_query.lower() != original_query.lower():

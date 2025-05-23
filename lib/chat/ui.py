@@ -382,12 +382,13 @@ def display_chat_interface(
         )
         # The user message will be displayed on the next rerun by the loop above.
         process_user_query(
-            chat_container, # chat_container might not be strictly needed by process_user_query
+            chat_container,
             prepared_question_content,
             query_rag_fn,
             query_llm_fn,
             format_context_fn,
             format_references_fn,
+            user_id=st.session_state.get('user_id'),
         )
         st.rerun() # Rerun to display the new user message and assistant response
 
@@ -420,6 +421,7 @@ def display_chat_interface(
             query_llm_fn,
             format_context_fn,
             format_references_fn,
+            user_id=st.session_state.get('user_id'),
         )
         st.rerun()
 
@@ -439,17 +441,19 @@ def display_chat_interface(
                 query_llm_fn,
                 format_context_fn,
                 format_references_fn,
+                user_id=st.session_state.get('user_id'),
             )
             st.rerun()
 
 
 def process_user_query(
-    chat_container, # This argument might become vestigial if all display is handled by rerun
+    chat_container,
     prompt: str,
     query_rag_fn: Callable,
     query_llm_fn: Callable,
     format_context_fn: Callable,
     format_references_fn: Callable,
+    user_id: str = None,
 ):
     """Process a user query and display the response.
     Assumes the user message `prompt` has already been added to st.session_state.messages.
@@ -509,13 +513,17 @@ def process_user_query(
                 context=context_for_llm, question=prompt
             )
 
-            response_content = query_llm_fn(
+            llm_result = query_llm_fn(
                 final_llm_prompt,
                 context=context_for_llm,
                 conversation_history=conversation_history,
+                user_id=user_id,
             )
+            response_content = llm_result.get('response')
+            success = llm_result.get('success', False)
+            error_msg = llm_result.get('error')
 
-            if response_content:
+            if success and response_content:
                 references_text = format_references_fn(rag_results if rag_results else [])
                 st.markdown(response_content)
                 if references_text:
@@ -530,17 +538,12 @@ def process_user_query(
                         "references": references_text,
                     }
                 )
-                logger.info(
-                    f"Chat ID: {st.session_state.chat_id} - "
-                    f"Query processed successfully. Original prompt: '{prompt[:50]}...'. "
-                    f"Found {len(rag_results if rag_results else [])} relevant documents."
-                )
             else:
-                error_msg = "Failed to get a response. Please try again."
-                st.error(error_msg)
+                error_display = error_msg or "Failed to get a response. Please try again."
+                st.error(error_display)
                 logger.error(
                     f"Chat ID: {st.session_state.chat_id} "
-                    f"- Failed to get LLM response for query: '{prompt}'"
+                    f"- Failed to get LLM response for query: '{prompt}'. Error: {error_display}"
                 )
                 st.session_state.messages.append(
                     {
@@ -548,6 +551,12 @@ def process_user_query(
                         "content": "Sorry, I encountered an error trying to respond.",
                         "references": "",
                     }
+                )
+
+                logger.info(
+                    f"Chat ID: {st.session_state.chat_id} - "
+                    f"Query processed successfully. Original prompt: '{prompt[:50]}...'. "
+                    f"LLM response: '{str(response_content)[:50]}...'."
                 )
 
 

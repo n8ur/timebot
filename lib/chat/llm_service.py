@@ -48,13 +48,13 @@ def query_llm(
     Returns:
         Dictionary with response data and status
     """
-    logger.info(f"LLM QUERY - user_id={user_id} prompt=\"{prompt}\"")
     if config["USE_EXTERNAL_LLM"]:
-        return query_external_llm_with_retries(
+        result = query_external_llm_with_retries(
             prompt, model, context, conversation_history, user_id
         )
     else:
-        return query_local_ollama(prompt, model, context, conversation_history, user_id)
+        result = query_local_ollama(prompt, model, context, conversation_history, user_id)
+    return {"success": result.get("success", False), "response": result.get("response"), "error": result.get("error")}
 
 
 def query_external_llm_with_retries(
@@ -78,7 +78,7 @@ def query_external_llm_with_retries(
         Dictionary with response data and status
     """
     # Log the start of an external LLM query (INFO)
-    logger.info(f"LLM EXTERNAL QUERY - user_id={user_id} model={model} prompt=\"{prompt}\"")
+    logger.info(f"LLM EXTERNAL QUERY - user_id={user_id} model={model} prompt=[PROMPT_CONTENT_OMITTED] (see SYSTEM_PROMPT or LLM_ENHANCEMENT_PROMPT)")
     max_retries = config["EXTERNAL_LLM_API_MAX_RETRIES"]
     base_delay = config["EXTERNAL_LLM_API_RETRY_DELAY"]
 
@@ -86,13 +86,15 @@ def query_external_llm_with_retries(
         try:
             # Call the external LLM service (inline the old query_external_llm logic here)
             # This is the Gemini/Google AI API call
-            url = config["EXTERNAL_LLM_API_URL"]
+            api_url = config["EXTERNAL_LLM_API_URL"]
             api_key = config["EXTERNAL_LLM_API_KEY"]
             model_to_use = model if model else config["EXTERNAL_LLM_MODEL"]
 
+            # IMPORTANT: For Google Gemini/AI APIs, the API key must be passed as a query parameter (?key=API_KEY),
+            # NOT as a Bearer token in the Authorization header. Do NOT revert this to using Authorization header!
+            url = f"{api_url}?key={api_key}"
             headers = {
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}",
             }
 
             # Format the conversation history for Gemini API
@@ -124,7 +126,7 @@ def query_external_llm_with_retries(
                 result = response.json()
                 try:
                     response_text = result["candidates"][0]["content"]["parts"][0]["text"]
-                    result = {"success": True, "response": response_text}
+                    result = {"success": True, "response": response_text, "error": None}
                 except (KeyError, IndexError) as e:
                     error_msg = f"Error extracting response: {str(e)}"
                     logger.error(error_msg)
@@ -201,10 +203,10 @@ from .ollama_llm_service import query_local_ollama  # Ollama-specific logic move
 
 def query_external_llm(
     prompt: str,
-    model: Optional[str] = None, # MODIFIED: Added model parameter
+    model: Optional[str] = None, 
     context: str = "",
     conversation_history: Optional[List[Dict[str, Any]]] = None,
-) -> Optional[str]:
+) -> Dict[str, Any]:
     """
     Send a prompt to external LLM and return the response.
 
@@ -215,7 +217,7 @@ def query_external_llm(
         conversation_history: List of previous messages in the conversation
     """
     try:
-        model_to_use = model if model else EXTERNAL_LLM_MODEL
+        model_to_use = model if model else config["EXTERNAL_LLM_MODEL"]
         logger.info(
             f"LLM REQUEST - Query LLM API with model: {model_to_use}"
         )
@@ -226,7 +228,7 @@ def query_external_llm(
         # the 'url' construction below would need to be made dynamic based on 'model_to_use'.
         # Currently, EXTERNAL_LLM_API_URL is assumed to be the full path to the generateContent
         # endpoint for the default model.
-        url = f"{EXTERNAL_LLM_API_URL}?key={EXTERNAL_LLM_API_KEY}"
+        url = f"{config['EXTERNAL_LLM_API_URL']}?key={config['EXTERNAL_LLM_API_KEY']}"
 
         # Check if API key is set
         if not config["EXTERNAL_LLM_API_KEY"]:

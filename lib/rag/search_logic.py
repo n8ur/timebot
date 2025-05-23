@@ -350,7 +350,7 @@ def perform_search_logic(
     results = ensure_float_scores(results)
     if use_weighting_cfg:
         logger.debug("Applying diversity weighting before reranking")
-        results = apply_diversity_weights(results, config=config)
+        results = apply_diversity_weights(results)
     if DEDUPLICATION_ENABLED:
         original_count = len(results)
         results = deduplicate_by_content(results)
@@ -366,7 +366,7 @@ def perform_search_logic(
         except Exception as e: logger.warning(f"Reranking failed: {e}", exc_info=True)
     if use_weighting_cfg:
         logger.debug("Applying final weighting.")
-        results = apply_final_weights(results, config)
+        results = apply_final_weights(results)
     results.sort(key=lambda x: x.get("score", 0.0) if isinstance(x.get("score"), (int, float)) else 0.0, reverse=True)
     final_results = results[:top_k]
     logger.info(f"Returning final {len(final_results)} results.")
