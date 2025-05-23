@@ -2,7 +2,6 @@
 # Copyright 2025 John Ackermann
 # Licensed under the MIT License. See LICENSE.TXT for details.
 
-# llm_service.py
 import requests
 import json
 import logging
@@ -29,8 +28,6 @@ def initialize_external_llm_service(config, auth_service=None):
         logger.debug("External LLM service initialized")
 
 
-
-
 def query_llm(
     prompt: str,
     model: Optional[str] = None,
@@ -51,6 +48,7 @@ def query_llm(
     Returns:
         Dictionary with response data and status
     """
+    logger.info(f"LLM QUERY - user_id={user_id} prompt=\"{prompt}\"")
     if config["USE_EXTERNAL_LLM"]:
         return query_external_llm_with_retries(
             prompt, model, context, conversation_history, user_id
@@ -79,6 +77,8 @@ def query_external_llm_with_retries(
     Returns:
         Dictionary with response data and status
     """
+    # Log the start of an external LLM query (INFO)
+    logger.info(f"LLM EXTERNAL QUERY - user_id={user_id} model={model} prompt=\"{prompt}\"")
     max_retries = config["EXTERNAL_LLM_API_MAX_RETRIES"]
     base_delay = config["EXTERNAL_LLM_API_RETRY_DELAY"]
 
@@ -117,7 +117,7 @@ def query_external_llm_with_retries(
 
             response = requests.post(url, headers=headers, json=payload)
             if response.status_code != 200:
-                error_msg = f"Gemini API returned error {response.status_code}: {response.text}"
+                error_msg = f"LLM API returned error {response.status_code}: {response.text}"
                 logger.error(error_msg)
                 result = {"success": False, "error": error_msg, "response": None}
             else:
@@ -160,7 +160,7 @@ def query_external_llm_with_retries(
             logger.error(f"GOOGLE AI - All {max_retries+1} attempts failed")
             return result
         delay = base_delay * (2**attempt) + random.uniform(0, 1)
-        logger.info(
+        logger.debug(
             f"GOOGLE AI - Retrying in {delay:.2f} seconds "
             f"(attempt {attempt+1}/{max_retries})"
         )
@@ -217,7 +217,7 @@ def query_external_llm(
     try:
         model_to_use = model if model else EXTERNAL_LLM_MODEL
         logger.info(
-            f"LLM REQUEST - Query Gemini API with model: {model_to_use}"
+            f"LLM REQUEST - Query LLM API with model: {model_to_use}"
         )
 
         # For Gemini API, the API key is passed as a query parameter
@@ -230,7 +230,7 @@ def query_external_llm(
 
         # Check if API key is set
         if not config["EXTERNAL_LLM_API_KEY"]:
-            error_msg = ("Gemini API key is not set. Please set the "
+            error_msg = ("LLM API key is not set. Please set the "
                          "API key in your configuration.")
             logger.error(error_msg)
             st.error(error_msg)
@@ -238,7 +238,7 @@ def query_external_llm(
 
         headers = {"Content-Type": "application/json"}
 
-        # Build the contents array for Gemini API
+        # Build the contents array for LLM API
         contents = []
 
         # If we have conversation history, format it for Gemini
@@ -256,8 +256,8 @@ def query_external_llm(
         # Add the current prompt as the final message
         contents.append({"role": "user", "parts": [{"text": prompt}]})
 
-        # Log the formatted messages being sent to Gemini
-        logger.debug(f"LLM REQUEST - Sending {len(contents)} messages to Gemini model: {model_to_use}")
+        # Log the formatted messages being sent to LLM
+        logger.debug(f"LLM REQUEST - Sending {len(contents)} messages to LLM model: {model_to_use}")
         for i, msg in enumerate(contents):
             # Truncate long messages for logging
             content_preview = (
@@ -290,7 +290,7 @@ def query_external_llm(
         response = requests.post(url, headers=headers, json=payload)
 
         # Log response status
-        logger.info(
+        logger.debug(
             f"LLM RESPONSE - Received response with status code: "
             f"{response.status_code}"
         )
@@ -301,7 +301,7 @@ def query_external_llm(
                 f"LLM ERROR - HTTP Error {response.status_code}: {response.text}"
             )
             error_msg = (
-                f"Gemini API returned error {response.status_code}: {response.text}"
+                f"LLM API returned error {response.status_code}: {response.text}"
             )
             st.error(error_msg)
             return None
@@ -315,7 +315,7 @@ def query_external_llm(
         # Extract the response text from Gemini's response format
         try:
             response_text = result["candidates"][0]["content"]["parts"][0]["text"]
-            logger.info(
+            logger.debug(
                 f"LLM RESPONSE - Successfully extracted response text "
                 f"(length: {len(response_text)} chars)"
             )
@@ -340,7 +340,7 @@ def query_external_llm(
         st.error(error_msg)
         return None
     except json.JSONDecodeError as e:
-        error_msg = f"Error parsing Gemini API response as JSON: {str(e)}"
+        error_msg = f"Error parsing LLM API response as JSON: {str(e)}"
         logger.error(f"LLM ERROR - {error_msg}")
         # Try to log the raw response
         try:
@@ -351,7 +351,7 @@ def query_external_llm(
         st.error(error_msg)
         return None
     except Exception as e:
-        error_msg = f"Unexpected error when calling Gemini API: {str(e)}"
+        error_msg = f"Unexpected error when calling LLM API: {str(e)}"
         logger.error(f"LLM ERROR - {error_msg}")
         logger.exception("LLM ERROR - Full exception details:")
         st.error(error_msg)

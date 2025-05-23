@@ -61,6 +61,7 @@ class AuthService:
         """Check if there's a saved authentication token and validate it"""
         # First check if we're already authenticated in this session
         if st.session_state.get("authenticated", False):
+            logger.info(f"USER LOGIN - user_id={st.session_state.get('user_id')} email={st.session_state.get('user_email')} timestamp={datetime.now().isoformat()}")
             return
 
         # Check for token in URL params
@@ -101,8 +102,7 @@ class AuthService:
                                     "full_name", ""
                                 )
 
-                            # Update the token in Firestore with new
-                            # refresh token
+                            # Update the token in Firestore with new refresh token
                             self.db.collection("auth_tokens").document(token_id).update(
                                 {
                                     "refresh_token": user["refreshToken"],

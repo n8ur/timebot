@@ -201,15 +201,10 @@ def format_references(rag_results: List[Dict[str, Any]]) -> str:
                 from shared.config import config
                 import os
                 doc_filename = metadata.get("file_name")
-                logger.info(f"[DEBUG] doc_filename: {doc_filename}")
                 if doc_filename:
                     doc_basename = os.path.basename(doc_filename)
-                    logger.info(f"[DEBUG] doc_basename: {doc_basename}")
                     doc_basename = ensure_timebot_prefix(doc_basename)
-                    logger.info(f"[DEBUG] doc_basename after prefix: {doc_basename}")
-                    logger.info(f"[DEBUG] DOC_BASE_URL: {config['DOC_BASE_URL']}")
                     doc_url = make_prefixed_document_url(doc_basename, config["DOC_BASE_URL"])
-                    logger.info(f"[DEBUG] Final doc_url: {doc_url}")
                     reference += f" [Link]({doc_url})"
 
             elif doc_type == "web":

@@ -2,7 +2,6 @@
 # Copyright 2025 John Ackermann
 # Licensed under the MIT License. See LICENSE.TXT for details.
 
-# external_llm_service.py
 import requests
 import json
 import time
@@ -31,13 +30,6 @@ class ExternalLLMService:
         self.api_url = config["EXTERNAL_LLM_API_URL"]
         self.model = config["EXTERNAL_LLM_MODEL"]
         self.max_output_tokens = config["MAX_OUTPUT_TOKENS"]
-
-        # Debug log for credential loading
-        if self.api_key:
-            obfuscated_key = self.api_key[:6] + "..." + self.api_key[-4:]
-        else:
-            obfuscated_key = "<EMPTY>"
-        logger.info(f"[DEBUG] ExternalLLMService initialized with API URL: {self.api_url}, API KEY: {obfuscated_key}")
 
         # Rate limiting configuration
         self.default_daily_limit = config["FREE_DAILY_LIMIT"]

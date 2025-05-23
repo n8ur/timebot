@@ -2,8 +2,6 @@
 # Copyright 2025 John Ackermann
 # Licensed under the MIT License. See LICENSE.TXT for details.
 
-# /usr/local/lib/timebot/lib/chat/rag_enhancement.py
-
 import logging
 from typing import Optional, List, Dict, Any, Callable
 
@@ -13,7 +11,7 @@ logger = logging.getLogger(__name__)
 def _construct_enhancement_prompt(
     original_query: str,
     conversation_history: Optional[List[Dict[str, Any]]] = None,
-    prompt_template: str = "Rewrite the following user query to be more effective for searching a technical knowledge base on time and frequency measurement. Expand abbreviations, clarify ambiguity, and use precise terminology. User query: '{query}'",
+    prompt_template: str,
 ) -> str:
     """
     Constructs the prompt to be sent to the LLM for query enhancement.
@@ -24,7 +22,8 @@ def _construct_enhancement_prompt(
     # history_context = ""
     # if conversation_history:
     #     # Process history into a string format suitable for the prompt
-    #     processed_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in conversation_history[-3:]]) # last 3 turns
+    #     processed_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in conversation_history[-3:]])
+    #     (last 3 turns)
     #     history_context = f"Consider the following conversation history:\n{processed_history}\n\n"
     #
     # prompt = prompt_template.format(history=history_context, query=original_query)
@@ -114,12 +113,12 @@ def enhance_query_with_llm(
             # (e.g., not empty, not excessively long, retains original intent - harder to check)
             if enhanced_query.lower() != original_query.lower():
                 logger.info(
-                    f"Query enhanced by LLM: '{original_query}' -> '{enhanced_query}'"
+                    f"Query enhanced by LLM for RAG: '{original_query}' -> '{enhanced_query}'"
                 )
                 return enhanced_query
             else:
                 logger.info(
-                    "LLM returned the same query or a non-substantive change. Using original."
+                    "LLM returned the same query or a non-substantive change. Using original for RAG."
                 )
                 return original_query
         else:

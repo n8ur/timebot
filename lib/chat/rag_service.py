@@ -2,8 +2,6 @@
 # Copyright 2025 John Ackermann
 # Licensed under the MIT License. See LICENSE.TXT for details.
 
-# rag_service.py - RAG (Retrieval-Augmented Generation) service for the Timebot chat application
-
 import requests
 import json
 import streamlit as st
@@ -98,7 +96,7 @@ def determine_query_type(conversation_history: List[Dict[str, Any]]) -> str:
     return "new_topic"
 
 
-def enhance_query( # This is the original rule-based enhance_query
+def enhance_follow(
     query_to_enhance: str, conversation_history: Optional[List[Dict[str, Any]]] = None
 ) -> str:
     """
@@ -106,17 +104,17 @@ def enhance_query( # This is the original rule-based enhance_query
     `query_to_enhance` is the query to potentially enhance (could be original or LLM-enhanced).
     `conversation_history` includes the current query. This function needs to find the *previous* user query.
     """
-    logger.info(f"ENHANCE DEBUG - Starting RULE-BASED enhancement of query: '{query_to_enhance}'")
+    logger.debug(f"Starting RULE-BASED enhancement of query: '{query_to_enhance}'")
 
     enable_enhancement = st.session_state.get(
         "enable_query_enhancement", config["ENABLE_RULE_BASED_ENHANCEMENT"]
     )
     if not enable_enhancement:
-        logger.debug("ENHANCE DEBUG - Rule-based enhancement disabled in settings (session/default).")
+        logger.debug("Rule-based enhancement disabled in settings (session/default).")
         return query_to_enhance
 
     if not conversation_history:
-        logger.debug("ENHANCE DEBUG - No conversation history provided for rule-based enhancement.")
+        logger.debug("No conversation history provided for rule-based enhancement.")
         return query_to_enhance
 
     try:
@@ -137,27 +135,27 @@ def enhance_query( # This is the original rule-based enhance_query
                 # and doesn't exactly match the last user message.
                 # A more robust way is to assume the last entry in all_user_queries_in_history
                 # IS the current query contextually, and the one before is previous.
-                logger.warning(
-                    "ENHANCE DEBUG - Rule-based: 'query_to_enhance' param did not exactly match "
+                logger.debug(
+                    "'query_to_enhance' param did not exactly match "
                     "the last user message in history. Using second-to-last user message as context."
                 )
                 previous_query_content = all_user_queries_in_history[-2] # Still take the one before last
         else: # Not enough user queries for a "previous" one.
-            logger.debug("ENHANCE DEBUG - Not enough user queries in history for rule-based context (need >= 2).")
+            logger.debug("Not enough user queries in history for rule-based context (need >= 2).")
             return query_to_enhance
 
 
         if not previous_query_content:
-            logger.debug("ENHANCE DEBUG - No previous user query found for rule-based enhancement context.")
+            logger.debug("No previous user query found for rule-based enhancement context.")
             return query_to_enhance
 
-        logger.info(f"ENHANCE DEBUG - Previous user query for rule-based context: '{previous_query_content}'")
+        logger.debug(f"Previous user query for rule-based context: '{previous_query_content}'")
 
         is_short_query = len(query_to_enhance.split()) <= 5
         has_pronoun = re.search(r'\b(it|this|that|these|those|they|them|their)\b', query_to_enhance.lower())
 
         if is_short_query or has_pronoun:
-            logger.info(
+            logger.debug(
                 f"ENHANCE DEBUG - Query qualifies for rule-based enhancement: "
                 f"short={is_short_query}, has_pronoun={has_pronoun is not None}"
             )
@@ -197,14 +195,14 @@ def enhance_query( # This is the original rule-based enhance_query
                 else: # For short queries without pronouns
                     rule_enhanced_output_str = f"{query_to_enhance} (in the context of {terms_str})"
 
-                logger.info(f"ENHANCE DEBUG - Rule-based enhanced query: '{rule_enhanced_output_str}'")
+                logger.info(f"Follow-up query enhanced to: '{rule_enhanced_output_str}'")
                 return rule_enhanced_output_str
             else:
-                logger.debug("ENHANCE DEBUG - No usable technical terms found for rule-based enhancement.")
+                logger.debug("No usable technical terms found for rule-based enhancement.")
         else:
-            logger.debug("ENHANCE DEBUG - Query does not qualify for rule-based enhancement (not short, no pronoun).")
+            logger.debug("Query does not qualify for rule-based enhancement (not short, no pronoun).")
 
-        logger.debug("ENHANCE DEBUG - No rule-based enhancement applied to query.")
+        logger.debug("No rule-based enhancement applied to query.")
         return query_to_enhance
 
     except Exception as e:
@@ -219,12 +217,16 @@ def query_rag(
     collection_filter: str = "all",
     mode: str = "combined",
     conversation_history: Optional[List[Dict[str, Any]]] = None, # Includes `query` as last user message
-) -> Optional[List[Dict[str, Any]]]:
+) -> List[Dict[str, Any]]:
     """
     Query the RAG API. Enhances query via LLM then rule-based (if applicable).
     Uses cache. Updates cache with detailed enhancement info.
     """
-    logger.info(f"--- Entered rag_service.query_rag with original query: '{query[:100]}...' ---")
+    user_id = None
+    if conversation_history and conversation_history[-1].get("user_id"):
+        user_id = conversation_history[-1]["user_id"]
+    logger.info(f"RAG QUERY - user_id={user_id} original_query=\"{query}\" top_k={top_k} similarity_threshold={similarity_threshold} collection_filter={collection_filter} mode={mode}")
+    logger.debug(f"Entered rag_service.query_rag with original query: '{query[:100]}...'")
 
     original_query = query
     query_for_processing = original_query # This variable will be transformed through stages
@@ -234,7 +236,7 @@ def query_rag(
     query_after_llm_stage = original_query # Initialize to original
 
     # `conversation_history` (if provided) includes the current `original_query` as the last user message.
-    # This full history is suitable for `determine_query_type` and `enhance_query` (rule-based).
+    # This full history is suitable for `determine_query_type` and `enhance_follow-up_query` (rule-based).
     history_for_context_funcs = conversation_history if conversation_history else []
 
     try:
@@ -242,16 +244,14 @@ def query_rag(
         query_type = "new_topic"
         if history_for_context_funcs: # determine_query_type handles internal checks for length
             query_type = determine_query_type(history_for_context_funcs)
-        logger.debug(f"RAG DEBUG - Query type determined as: {query_type}")
+        logger.debug(f"Query type determined as: {query_type}")
 
 
         # Step 2: LLM-based Query Enhancement (if enabled globally)
         if config["ENABLE_LLM_QUERY_ENHANCEMENT"]:
-            logger.debug(
-                f"RAG DEBUG - Attempting LLM query enhancement for: '{query_for_processing}'"
-            )
+            logger.debug(f"Attempting LLM query enhancement for: '{query_for_processing}'")
             # History for LLM enhancer: all messages *before* the current original_query.
-            # The `enhance_query_with_llm` function itself doesn't use conversation_history
+            # The `enhance_follow-up_query_with_llm` function itself doesn't use conversation_history
             # to construct its prompt in the current `rag_enhancement.py` version,
             # but passing it for future flexibility or if that function changes.
             history_for_llm_enhancer = []
@@ -268,10 +268,10 @@ def query_rag(
                     history_for_llm_enhancer = history_for_context_funcs[:idx_current_query]
                 else: # Fallback: if current query not found as last user message, pass all history (enhancer might ignore)
                     history_for_llm_enhancer = history_for_context_funcs
-                    logger.warning("RAG DEBUG - Could not definitively isolate history before current query for LLM enhancer.")
+                    logger.debug("Could not definitively isolate history before current query for LLM enhancer.")
 
 
-            llm_enhanced_output = chat.rag_enhancement.enhance_query_with_llm(
+            llm_enhanced_output = chat.rag_enhancement.enhance_follow-up_query_with_llm(
                 original_query=query_for_processing, # Pass current state of query
                 conversation_history=history_for_llm_enhancer,
                 llm_querier=chat.llm_service.query_llm,
@@ -282,66 +282,49 @@ def query_rag(
             query_after_llm_stage = llm_enhanced_output # Store result of LLM stage
 
             if llm_enhanced_output.strip().lower() != query_for_processing.strip().lower():
-                logger.debug(
-                    "RAG DEBUG - Query LLM-enhanced:"
-                    f" '{query_for_processing}' -> '{llm_enhanced_output}'"
-                )
+                logger.debug( f"Query LLM-enhanced: '{query_for_processing}' -> '{llm_enhanced_output}'")
                 query_for_processing = llm_enhanced_output # Update for next stage
                 llm_actually_changed_query = True
             else:
-                logger.debug(
-                    "RAG DEBUG - LLM enhancement made no textual change or returned original:"
-                    f" '{query_for_processing}'"
-                )
+                logger.debug("LLM enhancement made no textual change or returned original query")
         else:
             query_after_llm_stage = original_query # No LLM enhancement applied
-            logger.debug(
-                "RAG DEBUG - LLM query enhancement is disabled by global configuration."
-            )
+            logger.debug("LLM query enhancement is disabled by global configuration.")
 
         # Step 3: Rule-based Enhancement (if enabled by UI toggle AND query is follow-up)
         # This operates on `query_for_processing` (which might be LLM-enhanced or original)
-        final_query_for_rag = query_for_processing # Initialize with (potentially LLM-enhanced) query
+        final_query_for_rag = query_for_processing
 
         enable_rule_based_ui_toggle = st.session_state.get(
             "enable_query_enhancement", config["ENABLE_RULES_QUERY_ENHANCEMENT"]
         )
         logger.debug(
-            f"RAG DEBUG - Rule-based follow-up enhancement UI toggle: {enable_rule_based_ui_toggle}"
-        )
+            f"Rule-based follow-up enhancement UI toggle: {enable_rule_based_ui_toggle}")
 
         if enable_rule_based_ui_toggle and query_type == "follow_up":
-            logger.debug(
-                "RAG DEBUG - Calling rule-based enhance_query for follow-up question on:"
-                f" '{query_for_processing}'"
-            )
-            # `enhance_query` (rule-based) needs full history (including current query)
+            logger.debug(f"Calling rule-based enhanced query for follow-up question on: '{query_for_processing}'")
+            # `enhance_follow-up_query` (rule-based) needs full history (including current query)
             # to correctly identify the *previous* user query for context.
-            rule_enhanced_output = enhance_query(
+            rule_enhanced_output = enhance_follow-up_query(
                 query_for_processing, history_for_context_funcs # Pass full history
             )
             if rule_enhanced_output.strip().lower() != query_for_processing.strip().lower():
-                logger.debug(
-                    "RAG DEBUG - Query was rule-enhanced (for follow-up):"
-                    f" '{query_for_processing}' -> '{rule_enhanced_output}'"
-                )
+                logger.debug("Query was rule-enhanced (for follow-up): "
+                    f"'{query_for_processing}' -> '{rule_enhanced_output}'")
                 final_query_for_rag = rule_enhanced_output
                 rule_actually_changed_query = True
             else:
-                logger.debug(
-                    "RAG DEBUG - Rule-based enhancement made NO textual change to (follow-up):"
-                    f" '{query_for_processing}'"
-                )
+                logger.debug("Rule-based enhancement made NO textual change to follow-up query")
                 # final_query_for_rag remains query_for_processing
         else:
             if query_type != "follow_up":
-                logger.debug("RAG DEBUG - Rule-based enhancement skipped: not a follow-up query.")
+                logger.debug("Rule-based enhancement skipped: not a follow-up query.")
             if not enable_rule_based_ui_toggle:
-                logger.debug("RAG DEBUG - Rule-based enhancement skipped: disabled by UI toggle.")
+                logger.debug("Rule-based enhancement skipped: disabled by UI toggle.")
             # final_query_for_rag remains query_for_processing
 
-        logger.info(
-            f"RAG DEBUG - Final query for RAG API call: '{final_query_for_rag}'"
+        logger.debug(
+            f"Final query for RAG API call: '{final_query_for_rag}'"
             f" (Original user query: '{original_query}')"
         )
 
@@ -356,29 +339,29 @@ def query_rag(
             if cache_is_fresh:
                 if cached_data.get("original_query") == original_query and \
                    cached_data.get("final_query_for_rag") == final_query_for_rag:
-                    logger.debug("RAG DEBUG - Cache HIT: Valid (original and final RAG query match).")
+                    logger.debug("Cache HIT: Valid (original and final RAG query match).")
                     use_cache = True
                     cache_entry_results = cached_data.get("results", [])
                 elif cached_data.get("original_query") == original_query:
                     logger.debug(
-                        "RAG DEBUG - Cache MISS: Original query matches, but final RAG query differs. "
+                        "Cache MISS: Original query matches, but final RAG query differs. "
                         f"Old final: '{cached_data.get('final_query_for_rag')}', New final: '{final_query_for_rag}'. "
                         "Invalidating."
                     )
                 else:
-                    logger.debug("RAG DEBUG - Cache MISS: Original query differs. Invalidating.")
+                    logger.debug("Cache MISS: Original query differs. Invalidating.")
             else:
-                logger.debug("RAG DEBUG - Cache MISS: Stale (expired).")
+                logger.debug("Cache MISS: Stale (expired).")
         else:
-            logger.debug("RAG DEBUG - Cache MISS: No existing cache or no results in cache.")
+            logger.debug("Cache MISS: No existing cache or no results in cache.")
 
         results_from_rag_api = []
         if use_cache and cache_entry_results is not None:
-            logger.debug("RAG DEBUG - Using cached RAG results.")
+            logger.debug("Using cached RAG results.")
             results_from_rag_api = cache_entry_results
         else:
             logger.debug(
-                f"RAG DEBUG - Executing new RAG search with query: '{final_query_for_rag}'"
+                f"Executing new RAG search with query: '{final_query_for_rag}'"
             )
             endpoint = "/api/query"
             full_url = f"{config['EMBEDDING_SERVER_URL']}:{config['EMBEDDING_SERVER_PORT']}{endpoint}"
@@ -391,7 +374,7 @@ def query_rag(
                 "collection_filter": collection_filter,
                 "fuzzy": True,
             }
-            logger.debug(f"RAG REQUEST - Payload to RAG API: {json.dumps(payload)}")
+            logger.debug(f"Payload to RAG API: {json.dumps(payload)}")
 
             response = requests.post(full_url, json=payload)
             response.raise_for_status()
@@ -399,9 +382,9 @@ def query_rag(
 
             if isinstance(result_json, dict) and "results" in result_json:
                 results_from_rag_api = result_json["results"]
-                logger.info(f"RAG RESPONSE - RAG API returned {len(results_from_rag_api)} results.")
+                logger.info(f"RAG API returned {len(results_from_rag_api)} results.")
             else:
-                logger.warning(f"RAG RESPONSE - Unexpected RAG API response format: {type(result_json)}. Content: {str(result_json)[:200]}")
+                logger.warning(f" Unexpected RAG API response format: {type(result_json)}. Content: {str(result_json)[:200]}")
                 results_from_rag_api = []
 
             # Update cache with new search results and detailed enhancement info
@@ -417,18 +400,18 @@ def query_rag(
                 "enhanced_query": final_query_for_rag, # For backward compatibility
             }
             logger.debug(
-                f"RAG CACHE - Updated cache. Original: '{original_query}', "
+                f"Updated cache. Original: '{original_query}', "
                 f"LLM changed: {llm_actually_changed_query} (to '{query_after_llm_stage}'), "
                 f"Rule changed: {rule_actually_changed_query} (final: '{final_query_for_rag}')"
             )
 
         if final_query_for_rag.strip().lower() != original_query.strip().lower():
              logger.debug(
-                 f"RAG DEBUG - FINAL CHECK: Original query '{original_query}' was enhanced to '{final_query_for_rag}' for RAG."
+                 f"FINAL CHECK: Original query '{original_query}' was enhanced to '{final_query_for_rag}' for RAG."
              )
         else:
             logger.debug(
-                 f"RAG DEBUG - FINAL CHECK: Original query '{original_query}' was used for RAG without textual change from enhancements."
+                 f"FINAL CHECK: Original query '{original_query}' was used for RAG without textual change from enhancements."
             )
 
         return results_from_rag_api if results_from_rag_api is not None else []
@@ -460,9 +443,9 @@ def clear_rag_cache():
             "last_query": None,
             "enhanced_query": None,
         }
-        logger.debug("RAG CACHE - Cache cleared manually (new structure).")
+        logger.debug("RAG cache cleared manually (new structure).")
         return True
-    logger.debug("RAG CACHE - Attempted to clear cache, but no cache found in session_state.")
+    logger.debug("Attempted to clear RAG cache, but no cache found in session_state.")
     return False
 
 
@@ -477,7 +460,7 @@ def query_metadata( # Original function
     """
     Query the RAG API's metadata search endpoint.
     """
-    logger.info("--- Entered rag_service.query_metadata ---")
+    logger.debug("--- Entered rag_service.query_metadata ---")
     try:
         endpoint = "/api/metadata_search"
         base_url = config['EMBEDDING_SERVER_URL']
@@ -507,7 +490,7 @@ def query_metadata( # Original function
 
         if isinstance(result, dict) and "results" in result:
             results = result.get("results", [])
-            logger.info(
+            logger.debug(
                 "METADATA SEARCH RESPONSE - Received" f" {len(results)} results"
             )
             return results

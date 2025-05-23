@@ -100,6 +100,8 @@ def main():
     if not handle_navigation():
         # If we're on the main page, display the chat interface
         user_id = st.session_state.get("user_id") if USE_FIREBASE_AUTH else None
+        import logging, datetime
+        logging.getLogger().info(f"CHAT SESSION START - user_id={user_id} timestamp={datetime.datetime.now().isoformat()}")
         display_chat_interface(
             query_rag, 
             lambda prompt, model=None, context=None, conversation_history=None: query_llm(

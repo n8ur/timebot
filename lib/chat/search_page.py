@@ -125,7 +125,7 @@ def display_search_page(query_rag_fn, query_metadata_fn=None):
     def handle_form_submission(): 
         st.session_state.form_submitted = True
         # Log current state for debugging
-        logger.info(f"Form submitted. Current form data: {st.session_state.form_data}")
+        logger.debug(f"Form submitted. Current form data: {st.session_state.form_data}")
         
     def set_clear_search_flag(): st.session_state.clear_search_clicked = True
 
@@ -267,7 +267,7 @@ def display_search_page(query_rag_fn, query_metadata_fn=None):
         metadata_fuzzy = form_data["fuzzy"]
         
         # Log the current state for debugging
-        logger.info(f"Processing form submission. Form data: {form_data}")
+        logger.debug(f"Processing form submission. Form data: {form_data}")
 
         # Validate inputs
         if not any(st.session_state.collection_selection.values()):
@@ -292,8 +292,8 @@ def display_search_page(query_rag_fn, query_metadata_fn=None):
 
             # Log the search parameters for debugging
             logger.info(f"Search parameters - Query: '{search_query}', Mode: '{internal_mode}'")
-            logger.info(f"Metadata filters: {st.session_state.metadata_search}")
-            logger.info(f"Collection filter: {get_collection_filter(st.session_state.collection_selection)}")
+            logger.debug(f"Metadata filters: {st.session_state.metadata_search}")
+            logger.debug(f"Collection filter: {get_collection_filter(st.session_state.collection_selection)}")
 
             # Prepare metadata dict for API call (only non-empty)
             metadata_api = {}
