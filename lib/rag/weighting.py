@@ -62,7 +62,8 @@ def apply_weighting(results, config):
         List of results with weighted scores
     """
     # Skip if weighting is disabled
-    if not config.get("USE_WEIGHTING", False):
+    # Strict config policy: missing USE_WEIGHTING is a configuration error
+    if not config["USE_WEIGHTING"]:
         return results
 
     # Check if results have been reranked
@@ -92,7 +93,8 @@ def apply_diversity_weights(results, config):
     diversity_results = []
     
     # Extract diversity parameters from config
-    diversity_factor = float(config.get("DIVERSITY_FACTOR", 0.1))
+    # Strict config policy: missing DIVERSITY_FACTOR is a configuration error
+    diversity_factor = float(config["DIVERSITY_FACTOR"])
     
     # Group results by source type
     by_source = {}
@@ -159,14 +161,15 @@ def apply_final_weights(results, config):
 
     # Extract weight parameters from config
     weights = {
-        "document_collection_weight": float(config.get("DOCUMENT_COLLECTION_WEIGHT", 1.5)),
-        "email_collection_weight": float(config.get("EMAIL_COLLECTION_WEIGHT", 1.0)),
-        "web_collection_weight": float(config.get("WEB_COLLECTION_WEIGHT", 1.0)),
-        "recency_weight": float(config.get("RECENCY_WEIGHT", 0.1)),
-        "recency_decay_days": int(config.get("RECENCY_DECAY_DAYS", 1095)),
-        "chromadb_weight": float(config.get("CHROMADB_WEIGHT", 1.1)),
-        "whoosh_weight": float(config.get("WHOOSH_WEIGHT", 1.0)),
-        "reranker_weight": float(config.get("RERANKER_WEIGHT", 0.8)),
+        # Strict config policy: all weights must be present in config, missing keys are errors
+        "document_collection_weight": float(config["DOCUMENT_COLLECTION_WEIGHT"]),
+        "email_collection_weight": float(config["EMAIL_COLLECTION_WEIGHT"]),
+        "web_collection_weight": float(config["WEB_COLLECTION_WEIGHT"]),
+        "recency_weight": float(config["RECENCY_WEIGHT"]),
+        "recency_decay_days": int(config["RECENCY_DECAY_DAYS"]),
+        "chromadb_weight": float(config["CHROMADB_WEIGHT"]),
+        "whoosh_weight": float(config["WHOOSH_WEIGHT"]),
+        "reranker_weight": float(config["RERANKER_WEIGHT"]),
     }
 
     # Calculate business rules weight as complement of reranker weight

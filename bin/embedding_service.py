@@ -15,7 +15,6 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from fastapi.templating import Jinja2Templates
 import logging
 from pathlib import Path
 
@@ -61,15 +60,15 @@ app = FastAPI(
 async def log_requests(request, call_next):
     """Log all incoming requests."""
     separator = "="*50
-    logger.info(f"\n{separator}")
-    logger.info(f"REQUEST: {request.method} {request.url.path}")
+    logger.debug(f"\n{separator}")
+    logger.debug(f"REQUEST: {request.method} {request.url.path}")
 
     # Log the client IP address
     client_host = request.client.host if request.client else "Unknown"
-    logger.info(f"Client: {client_host}")
+    logger.debug(f"Client: {client_host}")
 
     # Log headers
-    logger.info(f"Headers: {request.headers.get('content-type')}")
+    logger.debug(f"Headers: {request.headers.get('content-type')}")
 
     # Log body
     try:
@@ -78,18 +77,18 @@ async def log_requests(request, call_next):
         if body_bytes:
             try:
                 body = body_bytes.decode()
-                logger.info(f"Body: {body}")
+                logger.debug(f"Body: {body}")
             except:
-                logger.info(f"Body: [binary data, length: {len(body_bytes)}]")
+                logger.debug(f"Body: [binary data, length: {len(body_bytes)}]")
     except Exception as e:
         logger.error(f"Error reading body: {e}")
 
-    logger.info(f"{separator}\n")
+    logger.debug(f"{separator}\n")
 
     response = await call_next(request)
     
     # Log response status code
-    logger.info(f"Response status: {response.status_code}")
+    logger.debug(f"Response status: {response.status_code}")
     
     return response
 

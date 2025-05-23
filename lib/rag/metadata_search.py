@@ -35,10 +35,10 @@ def search_by_whoosh_metadata(
     (Existing docstring...)
     """
     # --- DETAILED LOGGING ---
-    logger.info("--- Entering search_by_whoosh_metadata ---")
-    logger.info(f"Received metadata_queries: {metadata_queries}")
-    logger.info(f"Received content_query: {content_query}")
-    logger.info(f"Received fuzzy: {fuzzy}, top_k: {top_k}, collection_filter: {collection_filter}")
+    logger.debug("--- Entering search_by_whoosh_metadata ---")
+    logger.debug(f"Received metadata_queries: {metadata_queries}")
+    logger.debug(f"Received content_query: {content_query}")
+    logger.debug(f"Received fuzzy: {fuzzy}, top_k: {top_k}, collection_filter: {collection_filter}")
     # --- END LOGGING ---
 
     if not config:

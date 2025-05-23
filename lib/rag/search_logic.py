@@ -85,7 +85,7 @@ def search_whoosh_wrapper(query, fuzzy, collection_filter, top_k, config):
         logger.info("Whoosh wrapper received empty query, skipping search.")
         return []
 
-    logger.info(
+    logger.debug(
         f"Initiating Whoosh search via metadata_search wrapper for query: '{query}'"
     )
 
@@ -110,7 +110,8 @@ def search_whoosh_wrapper(query, fuzzy, collection_filter, top_k, config):
     try:
         # Search Emails
         if search_emails_flag:
-            email_index_dir = config.get("WHOOSHDB_EMAIL_PATH")
+            # Strict config policy: missing WHOOSHDB_EMAIL_PATH is a configuration error
+            email_index_dir = config["WHOOSHDB_EMAIL_PATH"]
             if email_index_dir:
                 logger.debug(f"Searching emails in {email_index_dir}")
                 email_results = whoosh_metadata_search(
@@ -133,7 +134,8 @@ def search_whoosh_wrapper(query, fuzzy, collection_filter, top_k, config):
 
         # Search Documents (covers 'document' and 'technical' schemas)
         if search_docs_flag:
-            doc_index_dir = config.get("WHOOSHDB_DOC_PATH")
+            # Strict config policy: missing WHOOSHDB_DOC_PATH is a configuration error
+            doc_index_dir = config["WHOOSHDB_DOC_PATH"]
             if doc_index_dir:
                 logger.debug(f"Searching documents in {doc_index_dir}")
                 # Determine if it's the 'technical' schema to include more fields
@@ -161,7 +163,8 @@ def search_whoosh_wrapper(query, fuzzy, collection_filter, top_k, config):
 
         # Search Web
         if search_web_flag:
-            web_index_dir = config.get("WHOOSHDB_WEB_PATH")
+            # Strict config policy: missing WHOOSHDB_WEB_PATH is a configuration error
+            web_index_dir = config["WHOOSHDB_WEB_PATH"]
             if web_index_dir:
                 logger.debug(f"Searching web in {web_index_dir}")
                 web_results = whoosh_metadata_search(
@@ -219,7 +222,8 @@ def search_chroma_wrapper(query, similarity_threshold, collection_filter, top_k,
 
         # Search Emails
         if search_emails_flag: # Use flag
-            email_collection = config.get("CHROMADB_EMAIL_COLLECTION")
+            # Strict config policy: missing CHROMADB_EMAIL_COLLECTION is a configuration error
+            email_collection = config["CHROMADB_EMAIL_COLLECTION"]
             if email_collection:
                 email_results = chroma_search_emails_unified(
                     collection_name=email_collection, query=query, limit=top_k, similarity_threshold=similarity_threshold
@@ -231,7 +235,8 @@ def search_chroma_wrapper(query, similarity_threshold, collection_filter, top_k,
 
         # Search Documents
         if search_docs_flag: # Use flag
-            doc_collection = config.get("CHROMADB_DOC_COLLECTION")
+            # Strict config policy: missing CHROMADB_DOC_COLLECTION is a configuration error
+            doc_collection = config["CHROMADB_DOC_COLLECTION"]
             if doc_collection:
                 doc_results = chroma_search_documents_unified(
                     collection_name=doc_collection, query=query, limit=top_k, similarity_threshold=similarity_threshold
@@ -243,7 +248,8 @@ def search_chroma_wrapper(query, similarity_threshold, collection_filter, top_k,
 
         # Search Web
         if search_web_flag: # Use flag
-            web_collection = config.get("CHROMADB_WEB_COLLECTION")
+            # Strict config policy: missing CHROMADB_WEB_COLLECTION is a configuration error
+            web_collection = config["CHROMADB_WEB_COLLECTION"]
             if web_collection:
                 web_results = chroma_search_web_unified(
                     collection_name=web_collection, query=query, limit=top_k, similarity_threshold=similarity_threshold
@@ -337,29 +343,29 @@ def perform_search_logic(
                      res_id = result.get("id")
                      if res_id and res_id not in metadata_ids:
                          results.append(result); metadata_ids.add(res_id); added_count += 1
-            logger.info(f"Merged {added_count} unique regular results with metadata results.")
+            logger.debug(f"Merged {added_count} unique regular results with metadata results.")
         else: results = regular_results
 
     # Post-processing (unchanged)
     results = ensure_float_scores(results)
     if use_weighting_cfg:
-        logger.info("Applying diversity weighting before reranking")
+        logger.debug("Applying diversity weighting before reranking")
         results = apply_diversity_weights(results, config=config)
     if DEDUPLICATION_ENABLED:
         original_count = len(results)
         results = deduplicate_by_content(results)
-        if len(results) < original_count: logger.info(f"Deduplicated {original_count - len(results)} results.")
+        if len(results) < original_count: logger.debug(f"Deduplicated {original_count - len(results)} results.")
     if use_reranking and is_content_search and len(results) > 1:
-        logger.info(f"Attempting reranking for {len(results)} results.")
+        logger.debug(f"Attempting reranking for {len(results)} results.")
         try:
             reranker_model = config["RERANKER_MODEL"] if config else None
             if reranker_model:
                  results = rerank_results(query, results, reranker_model)
-                 logger.info("Reranking applied successfully."); reranking_applied = True
+                 logger.debug("Reranking applied successfully."); reranking_applied = True
             else: logger.warning("Reranking enabled but RERANKER_MODEL not configured.")
         except Exception as e: logger.warning(f"Reranking failed: {e}", exc_info=True)
     if use_weighting_cfg:
-        logger.info("Applying final weighting.")
+        logger.debug("Applying final weighting.")
         results = apply_final_weights(results, config)
     results.sort(key=lambda x: x.get("score", 0.0) if isinstance(x.get("score"), (int, float)) else 0.0, reverse=True)
     final_results = results[:top_k]
