@@ -3,7 +3,6 @@
 # Licensed under the MIT License. See LICENSE.TXT for details.
 
 import streamlit as st
-import pyrebase
 import smtplib
 import time
 import firebase_admin
@@ -13,6 +12,8 @@ from firebase_admin import credentials, firestore
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 from shared.config import config
+from firebase.auth import Auth
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -33,23 +34,33 @@ class AuthService:
                 "appId": config["FIREBASE_APP_ID"],
             }
 
-            self.firebase = pyrebase.initialize_app(self.firebase_config)
-            self.auth_instance = self.firebase.auth()
-
-            
+            # Get credentials from the already initialized Firebase Admin app
             if not firebase_admin._apps:
                 cred = credentials.Certificate(
                     config["FIREBASE_SERVICE_ACCOUNT_KEY"]
                 )
                 firebase_admin.initialize_app(cred)
+                # Initialize Auth with all required parameters
+                self.auth_instance = Auth(
+                    api_key=config["FIREBASE_API_KEY"],
+                    credentials=cred,
+                    requests=requests
+                )
+            else:
+                # Get the credentials from the existing app
+                cred = firebase_admin._apps['[DEFAULT]'].credential
+                # Initialize Auth with all required parameters
+                self.auth_instance = Auth(
+                    api_key=config["FIREBASE_API_KEY"],
+                    credentials=cred,
+                    requests=requests
+                )
 
-            
             self.db = firestore.client()
 
             
             self._check_saved_auth()
         else:
-            self.firebase = None
             self.auth_instance = None
             self.db = None
 
@@ -196,11 +207,6 @@ class AuthService:
                 your email address and a password.  Once your account is approved,
                 you'll get an email letting you know.  We won't use your
                 information for anything other than validating your account.
-
-                **Note:** The timebot server is currently in early testing
-                and its performance under load is unknown.  If you have issues
-                accessing the system, please let me know (jra at febo dot com)
-                what issues you encountered.
                 """
             )
 
@@ -262,10 +268,8 @@ class AuthService:
                             st.session_state.login_in_progress = True
 
                             with st.spinner("Logging in..."):
-                                user = (
-                                    self.auth_instance.sign_in_with_email_and_password(
-                                        email, password
-                                    )
+                                user = self.auth_instance.sign_in_with_email_and_password(
+                                    email, password
                                 )
 
                                 
@@ -372,10 +376,6 @@ class AuthService:
                             elif "EMAIL_EXISTS" in error_message_str:
                                 user_friendly_message = "Email exists."
                                 
-                                
-
-
-                            
                             else:
                                 
                                 user_friendly_message = (
@@ -849,3 +849,4 @@ class AuthService:
         except Exception as e:
             logger.error(f"Error getting user limits: {str(e)}")
             return {"daily": self.config["FREE_DAILY_LIMIT"], "monthly": self.config["FREE_MONTHLY_LIMIT"]}
+
