@@ -2,16 +2,12 @@
 # Copyright 2025 John Ackermann
 # Licensed under the MIT License. See LICENSE.TXT for details.
 
-# auth_service.py - Firebase authentication service for Timebot
-
 import streamlit as st
 import pyrebase
 import smtplib
 import time
-import json
 import firebase_admin
 import uuid
-import base64
 import logging
 from firebase_admin import credentials, firestore
 from email.mime.text import MIMEText
@@ -40,17 +36,17 @@ class AuthService:
             self.firebase = pyrebase.initialize_app(self.firebase_config)
             self.auth_instance = self.firebase.auth()
 
-            # Initialize Firebase Admin SDK for Firestore
+            
             if not firebase_admin._apps:
                 cred = credentials.Certificate(
                     config["FIREBASE_SERVICE_ACCOUNT_KEY"]
                 )
                 firebase_admin.initialize_app(cred)
 
-            # Initialize Firestore client
+            
             self.db = firestore.client()
 
-            # Check for saved authentication
+            
             self._check_saved_auth()
         else:
             self.firebase = None
@@ -59,38 +55,38 @@ class AuthService:
 
     def _check_saved_auth(self):
         """Check if there's a saved authentication token and validate it"""
-        # First check if we're already authenticated in this session
+        
         if st.session_state.get("authenticated", False):
             logger.info(f"USER LOGIN - user_id={st.session_state.get('user_id')} email={st.session_state.get('user_email')} timestamp={datetime.now().isoformat()}")
             return
 
-        # Check for token in URL params
+        
         if "token" in st.query_params:
             token_id = st.query_params["token"]
 
             try:
-                # Look up the token in Firestore
+                
                 token_doc = self.db.collection("auth_tokens").document(token_id).get()
 
                 if token_doc.exists:
                     token_data = token_doc.to_dict()
 
-                    # Check if token is expired
+                    
                     if token_data.get("expires_at", 0) > time.time():
-                        # Token is valid, try to refresh Firebase token
+                        
                         try:
                             user = self.auth_instance.refresh(
                                 token_data.get("refresh_token")
                             )
 
-                            # Set session state
+                            
                             st.session_state.authenticated = True
                             st.session_state.user_id = token_data.get("user_id")
                             st.session_state.user_email = token_data.get("email")
                             st.session_state.auth_token = user["idToken"]
                             st.session_state.refresh_token = user["refreshToken"]
 
-                            # Get user data from Firestore to set full name
+                            
                             user_doc = (
                                 self.db.collection("users")
                                 .document(token_data.get("user_id"))
@@ -102,7 +98,7 @@ class AuthService:
                                     "full_name", ""
                                 )
 
-                            # Update the token in Firestore with new refresh token
+                            
                             self.db.collection("auth_tokens").document(token_id).update(
                                 {
                                     "refresh_token": user["refreshToken"],
@@ -115,25 +111,25 @@ class AuthService:
                                 f"{token_data.get('email')}"
                             )
 
-                            # Keep the token in URL for future visits
-                            # This is key - we don't clear the token from URL
+                            
+                            
                         except Exception as e:
                             logger.warning(
                                 f"Failed to refresh Firebase token: {str(e)}"
                             )
-                            # Delete the invalid token
+                            
                             self.db.collection("auth_tokens").document(
                                 token_id
                             ).delete()
                             st.query_params.clear()
                     else:
-                        # Token expired, delete it
+                        
                         self.db.collection("auth_tokens").document(token_id).delete()
-                        logger.info(f"Deleted expired auth token: {token_id}")
+                        
                         st.query_params.clear()
                 else:
-                    # Token not found, clear it from URL
-                    logger.warning(f"Auth token not found: {token_id}")
+                    
+                    
                     st.query_params.clear()
 
                 st.rerun()
@@ -153,7 +149,7 @@ class AuthService:
         if not self.use_auth:
             return
 
-        # Add custom CSS for styling
+        
         st.markdown(
             """
         <style>
@@ -184,7 +180,7 @@ class AuthService:
             unsafe_allow_html=True,
         )
 
-        # Create a centered layout with columns
+        
         _, center_col, _ = st.columns([1, 2, 1])
 
         with center_col:
@@ -208,7 +204,7 @@ class AuthService:
                 """
             )
 
-            # Check if we need to display the bookmark message
+            
             if st.session_state.get(
                 "show_bookmark_message", False
             ) and st.session_state.get("bookmark_url"):
@@ -223,19 +219,19 @@ class AuthService:
                 """
                 )
 
-                # Clear the flag so the message doesn't show again
+                
                 st.session_state.show_bookmark_message = False
 
-                # Add a button to continue
+                
                 if st.button("Continue to Timebot"):
-                    # Preserve the token in query params
+                    
                     if "token" in st.query_params:
                         token = st.query_params["token"]
                         st.query_params.clear()
                         st.query_params["token"] = token
                     st.rerun()
 
-                # Don't show the login/signup UI if we're showing the bookmark message
+                
                 return
 
             auth_tab1, auth_tab2, auth_tab3 = st.tabs(
@@ -249,7 +245,7 @@ class AuthService:
                 )
                 remember_me = st.checkbox("Remember me", key="login_remember")
 
-                # Initialize login_in_progress state if it doesn't exist
+                
                 if "login_in_progress" not in st.session_state:
                     st.session_state.login_in_progress = False
 
@@ -262,7 +258,7 @@ class AuthService:
                         st.error("Please enter both email and password")
                     else:
                         try:
-                            # Set loading state
+                            
                             st.session_state.login_in_progress = True
 
                             with st.spinner("Logging in..."):
@@ -272,14 +268,14 @@ class AuthService:
                                     )
                                 )
 
-                                # Store authentication info in session state
+                                
                                 st.session_state.authenticated = True
                                 st.session_state.user_id = user["localId"]
                                 st.session_state.user_email = user["email"]
                                 st.session_state.auth_token = user["idToken"]
                                 st.session_state.refresh_token = user["refreshToken"]
 
-                                # Get user data from Firestore to set full name
+                                
                                 user_doc = (
                                     self.db.collection("users")
                                     .document(user["localId"])
@@ -291,17 +287,17 @@ class AuthService:
                                         "full_name", ""
                                     )
 
-                                # If remember me is checked, create a persistent token
+                                
                                 if remember_me:
-                                    # Generate a unique token ID
+                                    
                                     token_id = str(uuid.uuid4())
 
-                                    # Calculate expiry (30 days from now)
+                                    
                                     expiry = time.time() + (
                                         30 * 24 * 60 * 60
-                                    )  # 30 days in seconds
+                                    )  
 
-                                    # Store token in Firestore
+                                    
                                     self.db.collection("auth_tokens").document(
                                         token_id
                                     ).set(
@@ -315,16 +311,16 @@ class AuthService:
                                         }
                                     )
 
-                                    # Set the token in query params for future visits
+                                    
                                     st.query_params["token"] = token_id
 
-                                    # Display the persistent login URL to the user
+                                    
                                     base_url = self.config["TIMEBOT_CHAT_BASE_URL"]
                                     if base_url.endswith("/"):
                                         base_url = base_url[:-1]
                                     persistent_url = f"{base_url}?token={token_id}"
 
-                                    # store URL in session state to display after rerun
+                                    
                                     st.session_state.show_bookmark_message = True
                                     st.session_state.bookmark_url = persistent_url
 
@@ -332,19 +328,19 @@ class AuthService:
                                         f"Created persistent token for: {email}"
                                     )
 
-                                logger.info(f"User logged in: {email}")
+                                
 
-                            # Reset loading state
+                            
                             st.session_state.login_in_progress = False
 
-                            # Only rerun if we're not showing the bookmark message
+                            
                             if not (
                                 remember_me
                                 and st.session_state.get("show_bookmark_message", False)
                             ):
                                 st.rerun()
                         except Exception as e:
-                            # Reset loading state
+                            
                             st.session_state.login_in_progress = False
 
                             error_message_str = str(e)
@@ -352,12 +348,12 @@ class AuthService:
                                 "Authentication failed. Please try again."
                             )
 
-                            # Check for specific, common errors and log concisely
+                            
                             if "INVALID_LOGIN_CREDENTIALS" in error_message_str:
                                 user_friendly_message = (
                                     "Invalid email or password. Please try again."
                                 )
-                                # Log CONCISE message for this common error
+                                
                                 logger.warning(
                                     f"Login failed for {email}: Invalid credentials."
                                 )
@@ -365,23 +361,23 @@ class AuthService:
                                 user_friendly_message = (
                                     "Too many failed login attempts. Please try later."
                                 )
-                                # Log CONCISE message for this common error
+                                
                                 logger.warning(
                                     f"Login failed for {email}: Too many attempts."
                                 )
                             elif "INVALID_EMAIL" in error_message_str:
                                 user_friendly_message = "Invalid email address."
-                                # Log CONCISE message for this common error
-                                logger.warning(f"Invalid email address: {email}")
+                                
+                                
                             elif "EMAIL_EXISTS" in error_message_str:
                                 user_friendly_message = "Email exists."
-                                # Log CONCISE message for this common error
-                                logger.warning(f"Duplicate email address: {email}")
+                                
+                                
 
 
-                            # Handle unexpected errors
+                            
                             else:
-                                # For any other exception, log FULL details
+                                
                                 user_friendly_message = (
                                     "An unexpected error occurred during login."
                                 )
@@ -438,7 +434,7 @@ class AuthService:
                         st.error("Passwords don't match")
                     else:
                         try:
-                            # Set loading state
+                            
                             st.session_state.signup_in_progress = True
 
                             with st.spinner("Creating account..."):
@@ -494,13 +490,13 @@ class AuthService:
                                 st.success(
                                     "Account created! Waiting for admin approval."
                                 )
-                                logger.info(f"New user signup: {full_name} ({email})")
+                                
 
-                            # Reset loading state
+                            
                             st.session_state.signup_in_progress = False
 
                         except Exception as e:
-                            # Reset loading state
+                            
                             st.session_state.signup_in_progress = False
 
                             error_message = str(e)
@@ -520,7 +516,7 @@ class AuthService:
                                     email address.
                                     """
 
-                            logger.warning(f"Signup failed for {email}: {str(e)}")
+                            logger.error(f"Signup failed for {email}: {str(e)}")
                             st.error(f"Signup failed: {error_message}")
 
             with auth_tab3:
@@ -561,7 +557,7 @@ class AuthService:
                             st.error("Please enter your email address")
                         else:
                             try:
-                                # Set loading state
+                                
                                 st.session_state.reset_in_progress = True
 
                                 with st.spinner("Sending password reset email..."):
@@ -576,14 +572,14 @@ class AuthService:
                                         f"{reset_email_input}"
                                     )
 
-                                # Reset loading state
+                                
                                 st.session_state.reset_in_progress = False
 
                                 # Rerun to show success message and return button
                                 st.rerun()
 
                             except Exception as e:
-                                # Reset loading state
+                                
                                 st.session_state.reset_in_progress = False
 
                                 error_message = str(e)
@@ -647,7 +643,7 @@ class AuthService:
             smtp_server.send_message(msg)
             smtp_server.quit()
 
-            logger.info(f"Approval email sent for user: {full_name} ({user_email})")
+            
         except Exception as e:
             logger.error(f"Failed to send approval email: {str(e)}")
 
@@ -669,7 +665,7 @@ class AuthService:
                 try:
                     # Delete the token from Firestore
                     self.db.collection("auth_tokens").document(token_id).delete()
-                    logger.info(f"Deleted auth token on logout: {token_id}")
+                    
                 except Exception as e:
                     logger.error(f"Error deleting auth token: {str(e)}")
 
