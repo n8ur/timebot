@@ -73,7 +73,7 @@ def query_local_ollama(
                         conversation_text += f"{role_prefix}{msg['content']}\n\n"
                 full_prompt = f"{conversation_text}User: {prompt}\n\nAssistant: "
                 logger.info(f"OLLAMA FALLBACK - Using fallback prompt (length: {len(full_prompt)} chars) [PROMPT_CONTENT_OMITTED]")
-                logger.debug("OLLAMA FALLBACK - Prompt preview: [PROMPT_CONTENT_OMITTED] (see SYSTEM_PROMPT)")
+                logger.debug("OLLAMA FALLBACK - Prompt preview: [PROMPT_CONTENT_OMITTED]")
                 payload = {"model": model, "prompt": full_prompt, "stream": False}
                 response = requests.post(OLLAMA_API_URL, json=payload)
                 response.raise_for_status()

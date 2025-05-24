@@ -394,6 +394,10 @@ class AuthService:
                             st.error(user_friendly_message)
 
             with auth_tab2:
+                # Safari autofill warning
+                st.info("""
+                **Safari Users:** If you use autofill, some fields may appear filled but not be detected by Timebot. If you see a message about missing fields, please retype each field manually before submitting.
+                """)
                 full_name = st.text_input("User Name", key="signup_full_name")
                 email = st.text_input("Email", key="signup_email")
                 password = st.text_input(
@@ -404,6 +408,15 @@ class AuthService:
                 # Initialize signup_in_progress state if it doesn't exist
                 if "signup_in_progress" not in st.session_state:
                     st.session_state.signup_in_progress = False
+                # Track if the user has already been warned
+                if "signup_empty_warned" not in st.session_state:
+                    st.session_state.signup_empty_warned = False
+
+                # Reset warning if user changes any field
+                for field, key in [(full_name, "signup_full_name"), (email, "signup_email"), (password, "signup_password"), (confirm_password, "signup_confirm_password")]:
+                    if st.session_state.get("last_" + key, None) != field:
+                        st.session_state.signup_empty_warned = False
+                    st.session_state["last_" + key] = field
 
                 if st.button(
                     "Sign Up",
@@ -416,7 +429,11 @@ class AuthService:
                         or not password
                         or not confirm_password
                     ):
-                        st.error("Please fill in all fields")
+                        if not st.session_state.signup_empty_warned:
+                            st.warning("One or more fields are empty. If you used autofill (especially in Safari), please retype each field before submitting.")
+                            st.session_state.signup_empty_warned = True
+                        else:
+                            st.error("Please fill in all fields.")
                     elif password != confirm_password:
                         st.error("Passwords don't match")
                     else:

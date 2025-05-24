@@ -104,7 +104,7 @@ def main():
         logging.getLogger().info(f"CHAT SESSION START - user_id={user_id} timestamp={datetime.datetime.now().isoformat()}")
         display_chat_interface(
             query_rag, 
-            lambda prompt, model=None, context=None, conversation_history=None: query_llm(
+            lambda prompt, model=None, context=None, conversation_history=None, user_id=None: query_llm(
                 prompt, model, context, conversation_history, user_id
             ),
             format_context, 

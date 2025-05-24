@@ -79,23 +79,41 @@ def display_info_page(config):
 
     If you're interested in more detail, these are the steps that occur:
 
-    1.  **Retrieval:** Your query is run against both the vector database 
+    1.  **Retrieval:** This is now a multi-step process.
+
+    1a. Your query is sent to an LLM that is instructed to review and
+    enhance it to generate more relevant results from the database search.
+    It does things like expand abbreviations and provide additional content
+    for the semantic search to work with.
+
+    1b. The enhanced query is run against both the vector database 
     (for semantic relevance) and the full-text index (for keyword matches) 
     to find potentially relevant emails and document chunks from the 
     knowledge base.
+
     2.  **Reranking:** The initial results from both indexes are combined and 
     then re-evaluated by a separate reranking model. This model scores and 
     reorders the results to prioritize the most relevant items for your 
     specific query.
+
     3.  **Context Assembly:** The 10 highest-ranked results (a mix of 
     email, document, and web chunks) are selected as context for your query.
+
     4.  **LLM Prompting:** Your original query *and* the context documents
     are sent to a Large Language Model (LLM). Timebot currently uses Google's 
-    `Gemini-2.0-Flash` LLM.
+    `Gemini-2.0-Flash` LLM.  (NOTE: your *original* query is sent, not the
+    enhanced version used for the RAG retrieval step above.)
+
     5.  **Generation:** The LLM synthesizes an answer based *both* on the 
     provided context from the knowledge base *and* its own general knowledge. 
     Citations linking back to the source emails or documents are included 
     where possible.
+
+    6.  **Follow-up queries:** If you submit a follow up query, that query is
+    enhanced to clarify ambiguities (e.g., if the follow-up refers to "it", that
+    is expanded to tie back to the subject of the prior query), a new database 
+    search is run, and the enhanced query, chat history, and new context documents 
+    are all sent to the LLM for processing.
 
     **Important Note:** This RAG process uses the knowledge base only for 
     the current query. The LLM is not permanently "trained" on this data; 

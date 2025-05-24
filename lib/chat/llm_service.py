@@ -78,7 +78,7 @@ def query_external_llm_with_retries(
         Dictionary with response data and status
     """
     # Log the start of an external LLM query (INFO)
-    logger.info(f"LLM EXTERNAL QUERY - user_id={user_id} model={model} prompt=[PROMPT_CONTENT_OMITTED] (see SYSTEM_PROMPT or LLM_ENHANCEMENT_PROMPT)")
+    logger.info(f"LLM EXTERNAL QUERY - user_id={user_id} model={model} prompt=[PROMPT_CONTENT_OMITTED]")
     max_retries = config["EXTERNAL_LLM_API_MAX_RETRIES"]
     base_delay = config["EXTERNAL_LLM_API_RETRY_DELAY"]
 
