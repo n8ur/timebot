@@ -6,6 +6,7 @@
 Core search logic for the RAG application. (Minimally modified for comma-separated filters)
 """
 
+import os
 import sys
 import uuid
 from typing import List, Dict, Any, Optional
@@ -39,6 +40,7 @@ def initialize_collections(config):
     if not config: logger.error("Config missing for initialize_collections."); return False
     try:
         db_path = config["CHROMADB_PATH"]
+        logger.info(f"[search_logic.py] initialize_collections using db_path: {db_path}, CWD: {os.getcwd()}")
         embedding_model = config["EMBEDDING_MODEL"]
         collections_to_init = {
             "email": config["CHROMADB_EMAIL_COLLECTION"],

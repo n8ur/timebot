@@ -19,6 +19,9 @@ EMAIL_TEXT_PROCESSED_DIR="/var/lib/timebot/email/processed/time-nuts-text"
 # Document sequence file
 DOC_SEQUENCE_FILE="/var/lib/timebot/docs/sequence.txt"
 
+# Prefix for document files
+DOC_PREFIX="timebot-"
+
 # Where sequence-numbered PDF files live
 DOC_PDF_DIR="/var/lib/timebot/docs/pdf"
 DOC_TEXT_UNPROCESSED_DIR="/var/lib/timebot/docs/unprocessed-text"
@@ -55,15 +58,14 @@ CHROMADB_DOC_COLLECTION="documents"
 CHROMADB_WEB_COLLECTION="web"
 
 # Models
-# INFERENCE_MODEL="granite3.2:8b"
 EMBEDDING_MODEL="BAAI/bge-m3"
-LLM_ENHANCEMENT_MODEL="gemini-2.0-flash"
 RERANKER_MODEL="BAAI/bge-reranker-large"
+EXTERNAL_LLM_MODEL="gemini-2.0-flash"
+LLM_ENHANCEMENT_MODEL="gemini-2.0-flash"
 
 # For external LLM (Gemini, OpenAI, etc.)
 USE_EXTERNAL_LLM=True
 EXTERNAL_LLM_ENABLED=True
-EXTERNAL_LLM_MODEL="gemini-2.0-flash"
 MAX_OUTPUT_TOKENS=8192
 ENABLE_OLLAMA_FALLBACK=False
 FALLBACK_MODEL="None"

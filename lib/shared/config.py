@@ -32,6 +32,8 @@ load_dotenv(SECRETS_PATH, override=True)
 _CONFIG.update(os.environ)
 
 # --- Normalize and convert config values in a single pass ---
+if _CONFIG.get("VERBOSE") or os.environ.get("VERBOSE", "false").lower() in ("true", "1", "yes", "on"):
+    print("[config.py] After loading dotenvs, CHROMADB_PATH:", _CONFIG.get("CHROMADB_PATH"), "CWD:", os.getcwd())
 for key, value in list(_CONFIG.items()):
     if isinstance(value, str):
         try:
@@ -105,6 +107,7 @@ config = ConfigDict(_CONFIG)
 
 # --- Print Configuration (Optional, for debugging) ---
 if config.get("VERBOSE"):
+    print("[config.py] After normalization, CHROMADB_PATH:", config.get("CHROMADB_PATH"), "CWD:", os.getcwd())
     print("--- Configuration ---")
     for key, value in config.items():
         print(f"{key}: {value}")

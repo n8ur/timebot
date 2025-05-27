@@ -38,6 +38,7 @@ logging.basicConfig(
         logging.StreamHandler()  # Also log to console
     ]
 )
+logger.info(f"[embedding_service.py] CHROMADB_PATH at startup: {config.get('CHROMADB_PATH')}, CWD: {os.getcwd()}")
 
 # Lifespan context manager for FastAPI
 @asynccontextmanager

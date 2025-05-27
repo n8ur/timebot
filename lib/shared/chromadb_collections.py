@@ -48,7 +48,7 @@ def open_collection(
     try:
         # Initialize the client
         client = chromadb.PersistentClient(path=db_path)
-        
+
         # Get a ChromaDB-compatible embedding function
         embedding_function = db_manager.get_embedding_function(embedding_model_name)
         
@@ -56,12 +56,15 @@ def open_collection(
         embedding_model = db_manager.embedding_models[embedding_model_name]
         
         # Check if collection exists and if we should recreate it
-        all_collection_names = client.list_collections()
-        collection_exists = collection_name in all_collection_names
-        
+        collections = client.list_collections()
+        # Robust existence check: supports both string and Collection object return types
+        collection_exists = any(
+            (c.name if hasattr(c, 'name') else c) == collection_name
+            for c in collections
+        )
+
         if collection_exists:
             if force_recreate:
-                print(f"Force recreating collection: {collection_name}")
                 client.delete_collection(name=collection_name)
                 collection = client.create_collection(
                     name=collection_name,
@@ -70,16 +73,12 @@ def open_collection(
                 )
             else:
                 try:
-                    print(f"Attempting to use existing ChromaDB collection: {collection_name}")
                     collection = client.get_collection(
                         name=collection_name,
                         embedding_function=embedding_function
                     )
-                    if verbose:
-                        print(f"Successfully opened existing collection '{collection_name}' with model: {embedding_model_name}")
                 except Exception as e:
                     if "dimension" in str(e).lower():
-                        print(f"⚠️ Dimension mismatch detected. Recreating collection: {collection_name}")
                         client.delete_collection(name=collection_name)
                         collection = client.create_collection(
                             name=collection_name,
@@ -90,12 +89,9 @@ def open_collection(
                         # Re-raise if it's not a dimension issue
                         raise
         else:
-            print(f"Collection '{collection_name}' not found. Creating it.")
-            collection = client.create_collection(
-                name=collection_name,
-                embedding_function=embedding_function,
-                metadata={"hnsw:space": "cosine", "model": embedding_model_name}
-            )
+            # Only log missing collection, do not create it when opening for read
+            print(f"Collection '{collection_name}' not found in ChromaDB. Not creating it (read-only open).")
+            return None
         
         # Create and store the context
         context = ChromaDBContext(

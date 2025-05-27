@@ -1,55 +1,59 @@
 # timebot.febo.com 
 
-This is **timebot**, a RAG-assisted expert system created
-for time and frequency applications, but the code should be
-usable for other knowledgebases with only minor changes.
+This is **timebot**, a RAG-assisted expert system created for time and
+frequency applications, but the code should be usable for other
+knowledgebases with only minor changes.
 
 ## Description
 
-**timebot** consists of several Python programs that ingest (a) Mailman v2 mailing
-list archive files in HTML format; (b) PDF files; and (c) web sites into two databases:
-chromadb for similarity searches, and whoosh for full-text indexing.
+**timebot** consists of several Python programs that ingest (a) Mailman v2
+mailing list archive files in HTML format; (b) PDF files; and (c) web sites
+into two databases: chromadb for similarity searches, and whoosh for
+full-text indexing.
 
 A RAG server allows queries into these databases.
 
-A chat server (built using the streamlit framework) accepts user queries, retrieves
-relevant documents from the databases, and forwards the query and context to an external
-LLM.
+A chat server (built using the streamlit framework) accepts user queries,
+retrieves relevant documents from the databases, and forwards the query and
+context to an external LLM.
 
-### Installation
-I need to document this more fully, but the software was built in a Debian
-12 LXC (container) on a Proxmox host.  The host has a GPU and the Nvidia CUDA 
-drivers are installed in the LXC to support the vector database embedding 
-model.  Apart from that, the hardware requirements are relatively modest -- 
-a couple of cores and about 8GB of RAM are sufficient.  Disk space depends on 
-the size of the knowledge base and the number of duplicate data copies you 
-keep around.
+### Installation I need to document this more fully, but the software was
+built in a Debian 12 LXC (container) on a Proxmox host.  The host has a GPU
+and the Nvidia CUDA drivers are installed in the LXC to support the vector
+database embedding model.  Apart from that, the hardware requirements are
+relatively modest -- a couple of cores and about 8GB of RAM are sufficient.
+Disk space depends on the size of the knowledge base and the number of
+duplicate data copies you keep around.
 
-The code is installed in /usr/local/lib/timebot and the knowledgebase and
-input documents are in /var lib/timebot.  The applications run from 
-/usr/local/bin/, the configuration files are in /etc/timebot, and the systemd 
-unit files are in /etc/systemd/system.  In my system, those files are all 
+The code is installed in /usr/local/lib/timebot and the knowledge base and
+input documents are in /var/lib/timebot.  The applications run from
+/usr/local/bin/, the configuration files are in /etc/timebot, and the systemd
+unit files are in /etc/systemd/system.  In my system, those files are all
 symlinks from the files stored under /usr/local/lib/timebot.
 
-There are a number of Python modules installed using PIP3 as root.  I know that's 
-horrible and evil and stuff but I couldn't figure out how to make this all work 
-using venv the way you're supposed to.
+Virtually all configuration (directories, model names, parameters, etc.)
+are set in /etc/timebot/config and API keys, passwords, and other sensitive
+information are set in /etc/timebot/secrets.  My goal is that you will be
+able to customize a system by modifying only these files, and the
+/usr/lib/timebot/lib/share/config.py file.  I'm not quite there yet, though.
 
-Still to be added is a requirements.txt file showing the PIP dependencies.  
-Many of the packages have had major upgrades since I started development 
-and I need to carefully go through the update process to get those installed 
+There are a number of Python modules installed using PIP3 as root.  I know
+that's horrible and evil and stuff but I couldn't figure out how to make this
+all work using venv the way you're supposed to.
+
+Still to be added is a requirements.txt file showing the PIP dependencies.
+Many of the packages have had major upgrades since I started development and
+I need to carefully go through the update process to get those installed
 without breaking everything.
 
-Apart from all that, you should need to only change "timebot" to your 
-preferred name throughout the files and you should be ready to start
-ingesting your knowledge base.  There are currently ingest programs to
-work with HTML formatted Mailman v2 archive files, PDF files (using Google
-Cloud Vision API to do OCR), and HTML-only files from web sites.
+Apart from all that, you should need to only change "timebot" to your
+preferred name throughout the files and make any customizations in the
+config files, and you should be ready to start ingesting your knowledge 
+base.  There are currently ingest programs to work with HTML formatted 
+Mailman v2 archive files, PDF files (using Google Cloud Vision API to 
+do OCR), and HTML-only files from web sites.
 
-You'll need to insert appropriate API keys, etc., in /etc/timebot/secrets.
-
-## Author
-John Ackermann N8UR  -- jra at febo dot com
+## Author John Ackermann N8UR  -- jra at febo dot com
 
 ## Version History
 * 0.1
@@ -57,6 +61,6 @@ John Ackermann N8UR  -- jra at febo dot com
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE.md file for details.
-Most of this code was generated by LLMs, so I don't claim much credit for it, though
-I suppose I have to accept the blame...
+This project is licensed under the MIT License - see the LICENSE.md file for
+details.  Most of this code was generated by LLMs, so I don't claim much
+credit for it, though I suppose I have to accept the blame...
