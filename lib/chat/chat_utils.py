@@ -260,6 +260,21 @@ def format_references(rag_results: List[Dict[str, Any]]) -> str:
             except Exception:
                 pass # Ignore errors during fallback URL retrieval
 
+        # Toggle to enable/disable source indicator in references
+        SHOW_SOURCE_INDICATOR = True  # Set to False to hide (C)/(W) indicators
+
+        # Add source indicator based on search_provider
+        if SHOW_SOURCE_INDICATOR:
+            provider = metadata.get("search_provider", "").lower()
+            provider_indicators = []
+            if "chroma" in provider:
+                provider_indicators.append("C")
+            if "whoosh" in provider:
+                provider_indicators.append("W")
+            if provider_indicators:
+                indicator_str = f" ({','.join(provider_indicators)})"
+                reference += indicator_str
+
         references.append(reference)
 
     # Join with double newlines for clear separation in chat UI
