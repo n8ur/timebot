@@ -513,7 +513,7 @@ def display_search_results(results_per_page):
         # Toggle to enable/disable source indicator in search results
         SHOW_SOURCE_INDICATOR = True  # Set to False to hide (C)/(W) indicators
 
-        # Prepare source indicator string if needed
+        # Prepare source indicator string but do not add to meta_parts
         indicator_str = ""
         if SHOW_SOURCE_INDICATOR:
             provider = metadata.get("search_provider", "").lower()
@@ -523,8 +523,7 @@ def display_search_results(results_per_page):
             if "whoosh" in provider:
                 provider_indicators.append("W")
             if provider_indicators:
-                indicator_str = f" ({'/'.join(provider_indicators)})"
-        # The indicator_str will be appended to the Source link or equivalent field below, not as a separate meta_parts entry.
+                indicator_str = f" (DB: {'/'.join(provider_indicators)})"
         url = metadata.get("url", "#") # Get URL from metadata
         doc_filename = metadata.get("file_name")
         from shared.utils import make_prefixed_document_url
@@ -571,11 +570,9 @@ def display_search_results(results_per_page):
             # Always use normalized/prefixed filename for document/technical links
             if doc_filename:
                 normalized_url = make_prefixed_document_url(doc_filename, "/download/pdf/")
-                meta_parts.append(f"**Source**: [Link]({normalized_url}){indicator_str}")
-                indicator_str = ""  # Prevent duplicate on fallback
+                meta_parts.append(f"**Source**: [Link]({normalized_url})")
             elif url != "#" and url != "Unknown":
-                meta_parts.append(f"**Source**: [Link]({url}){indicator_str}")
-                indicator_str = ""  # Prevent duplicate on fallback
+                meta_parts.append(f"**Source**: [Link]({url})")
 
         elif doc_type == "web":
             domain = metadata.get("domain", "")
@@ -583,8 +580,7 @@ def display_search_results(results_per_page):
             web_url = metadata.get("source_url") or url # Prefer source_url from metadata
             if domain: meta_parts.append(f"**Domain**: {domain}")
             if web_url != "#" and web_url != "Unknown":
-                 meta_parts.append(f"**Source**: [Link]({web_url}){indicator_str}")
-                 indicator_str = ""  # Prevent duplicate on fallback
+                 meta_parts.append(f"**Source**: [Link]({web_url})")
                  url = web_url # Ensure button uses the best URL
             if captured_at: meta_parts.append(f"**Scanned**: {captured_at}")
 
@@ -603,8 +599,7 @@ def display_search_results(results_per_page):
                  except (ValueError, TypeError, ZeroDivisionError): pass
 
         else: # Fallback for unknown type
-            if url != "#" and url != "Unknown": meta_parts.append(f"**Source**: [Link]({url}){indicator_str}")
-            indicator_str = ""  # Prevent duplicate on fallback
+            if url != "#" and url != "Unknown": meta_parts.append(f"**Source**: [Link]({url})")
 
         # --- Add Relevance Score (Conditional - from top level) ---
         if score is not None:
